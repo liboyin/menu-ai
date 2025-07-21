@@ -44,60 +44,82 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">MenuAI</h1>
-            <p className="text-gray-600 mt-2">Understand any menu instantly with AI</p>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!processedMenu ? (
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                Get started by uploading your menu photos
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Take photos of restaurant menus and we&apos;ll instantly digitize them, 
-                identify ingredients, and help you find exactly what you&apos;re looking for.
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {!processedMenu ? (
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="max-w-md mx-auto">
+            {/* Header */}
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl mb-6 shadow-soft">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">MenuAI</h1>
+              <p className="text-slate-600 text-lg leading-relaxed">
+                Upload any menu photo and instantly understand every dish with AI
               </p>
             </div>
             
+            {/* Upload Component */}
             <ImageUpload 
               onImagesSelected={handleImagesSelected}
               isProcessing={isProcessing}
             />
             
+            {/* Error Display */}
             {error && (
-              <div className="max-w-2xl mx-auto">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex">
+              <div className="mt-6">
+                <div className="glass-effect rounded-2xl p-4 border-red-200">
+                  <div className="flex items-start">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Error processing menu
-                      </h3>
-                      <div className="mt-2 text-sm text-red-700">
-                        <p>{error}</p>
+                      <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
                       </div>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-red-900 mb-1">Processing failed</p>
+                      <p className="text-sm text-red-700">{error}</p>
                     </div>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Features */}
+            <div className="mt-12 space-y-4">
+              <div className="flex items-center text-slate-600">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Instant ingredient analysis</span>
+              </div>
+              <div className="flex items-center text-slate-600">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Smart dietary filtering</span>
+              </div>
+              <div className="flex items-center text-slate-600">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Ask questions about dishes</span>
+              </div>
+            </div>
           </div>
-        ) : (
-          <MenuDisplay menu={processedMenu} onReset={handleReset} />
-        )}
-      </main>
+        </div>
+      ) : (
+        <MenuDisplay menu={processedMenu} onReset={handleReset} />
+      )}
     </div>
   )
 }

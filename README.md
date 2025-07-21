@@ -1,15 +1,16 @@
 # MenuAI
 
-A stateless web application that helps diners instantly understand restaurant menus using AI-powered analysis.
+A stateless web application that helps diners instantly understand restaurant menus using AI-powered analysis. Features a modern, mobile-first design optimized for on-the-go menu scanning.
 
 ## Features
 
-- **Image Upload**: Drag-and-drop or file selector for menu photos (JPG, PNG, WEBP)
-- **AI Menu Processing**: Multi-modal AI extracts menu items, prices, and ingredients
-- **Interactive Display**: Clean card-based menu visualization with dish images
-- **Smart Filtering**: Filter by price range and ingredients
-- **Conversational AI**: Chat interface for dietary questions and menu queries
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **🖼️ Image Upload**: Intuitive drag-and-drop or file selector for menu photos (JPG, PNG, WEBP)
+- **🤖 AI Menu Processing**: Multi-modal AI extracts menu items, prices, and ingredients
+- **📱 Mobile-Optimized Display**: Modern card-based menu visualization with horizontal layout for mobile
+- **🔍 Smart Filtering**: Collapsible filter system with price range and ingredient search
+- **💬 Conversational AI**: Modal chat interface on mobile, sidebar on desktop for dietary questions
+- **✨ Modern Design**: Glass-effect components, gradient styling, and smooth animations
+- **📲 Mobile-First**: Responsive design optimized for smartphone usage with touch-friendly interactions
 
 ## Tech Stack
 
@@ -48,8 +49,12 @@ A stateless web application that helps diners instantly understand restaurant me
 ## Current Implementation Status
 
 This MVP includes:
-- ✅ Complete frontend with upload, display, filtering, and chat
-- ✅ Backend API structure
+- ✅ Complete mobile-first frontend with modern UI/UX
+- ✅ Responsive image upload with glass-effect styling
+- ✅ Horizontal menu cards optimized for mobile viewing
+- ✅ Collapsible filtering system with visual indicators
+- ✅ Modal chat interface for mobile, sidebar for desktop
+- ✅ Backend API structure with TypeScript
 - ⚠️ Mock AI responses (replace with real API calls)
 - ⚠️ Placeholder dish images (integrate with image search)
 
@@ -57,6 +62,15 @@ To complete the implementation:
 1. Add your preferred AI API integration in `src/lib/menu-processor.ts`
 2. Implement image search in the same file
 3. Deploy to your preferred platform (Vercel, AWS, etc.)
+
+## Design Features
+
+- **Modern Aesthetic**: Glass-morphism effects with backdrop blur
+- **Mobile-First**: Optimized layouts for smartphone usage
+- **Touch-Friendly**: Large buttons and intuitive gestures
+- **Visual Hierarchy**: Clean typography with Inter font family
+- **Smooth Animations**: Micro-interactions and hover effects
+- **Gradient Styling**: Professional blue/slate color scheme
 
 ## Project Structure
 

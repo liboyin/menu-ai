@@ -10,6 +10,7 @@
 | Version | Date       | Changes        |
 | :------ | :--------- | :------------- |
 | 1.0     | 2025-07-21 | Initial draft. |
+| 1.1     | 2025-07-21 | Updated UI requirements for modern, mobile-first design. |
 
 ---
 
@@ -43,19 +44,21 @@ The user initiates the process by uploading one or more menu images. The system 
 
 The structured data is presented on a clean, interactive webpage where the user can ask questions.
 
-* **F2.1 Menu Visualization:** The processed menu shall be displayed as a series of cards. Each card must contain the dish name (as a heading), the fetched dish image, the list of ingredients, and the price.
-* **F2.2 Conversational AI (Chatbot):** The page must feature a chat interface.
+* **F2.1 Menu Visualization:** The processed menu shall be displayed as a series of cards optimized for mobile viewing. Each card must contain the dish name (as a heading), the fetched dish image, the list of ingredients, and the price. On mobile devices, cards should use a horizontal layout for better screen utilization.
+* **F2.2 Conversational AI (Chatbot):** The page must feature a chat interface that adapts to the device form factor.
     * **F2.2.1 Contextual Awareness:** The chatbot's knowledge must be strictly limited to the menu items and ingredients processed in the current session.
     * **F2.2.2 Dietary Queries:** Users must be able to ask dietary questions like, "What are the vegan options?", "Which dishes are gluten-free?", or "What doesn't contain nuts?".
     * **F2.2.3 General Queries:** Users must be able to ask about specific dishes or types of food, such as "Do you have any omelettes?".
+    * **F2.2.4 Mobile Interface:** On mobile devices, the chat interface should appear as a modal overlay to maximize screen real estate, while on desktop it should be displayed as a sidebar.
 
 ### 3.3 Use Case 3: Filtering
 
 The interactive menu page must include powerful filtering capabilities to help users narrow down their choices.
 
-* **F3.1 Filter by Price:** A price range slider shall be provided to allow users to filter dishes within a specific budget.
+* **F3.1 Filter by Price:** A price range input system shall be provided to allow users to filter dishes within a specific budget.
 * **F3.2 Filter by Ingredient:** A text input field shall allow users to filter dishes that **contain** a specific ingredient.
 * **F3.3 Ingredient Exclusion:** The ingredient filter must ignore a predefined list of trivial ingredients. This list shall initially include: **salt, water, pepper, sugar, and oil**.
+* **F3.4 Mobile Filter Interface:** On mobile devices, filters should be collapsible to save screen space, with clear visual indicators when filters are active.
 
 ---
 
@@ -64,6 +67,11 @@ The interactive menu page must include powerful filtering capabilities to help u
 * **NF1 Technology Stack:**
     * **Frontend:** Must be a single-page application (SPA) built with **TypeScript** and a modern framework (e.g., **Next.js/React, Nuxt/Vue**).
     * **Backend:** Can be **TypeScript (Node.js)** or **Python**. TypeScript is preferred for consistency with frontend.
+* **NF1.5 UI/UX Requirements:**
+    * **Modern Design:** The web app's UI must be modern and simplistic with clean aesthetics.
+    * **Mobile Optimization:** The interface must be optimized for usage on mobile phones with touch-friendly interactions.
+    * **Responsive Design:** Must provide an optimal viewing experience across desktop, tablet, and mobile devices.
+    * **Visual Hierarchy:** Clear typography, appropriate spacing, and intuitive navigation patterns.
 * **NF2 Stateless Architecture:** The application must be fully stateless. No user accounts, login, or session data will be stored on the server.
 * **NF3 Hosting and Scalability:**
     * The application must be hosted on a major cloud provider (e.g., **AWS, Google Cloud, Azure**).
