@@ -41,10 +41,8 @@ A stateless web application that helps diners instantly understand restaurant me
 
 ## Environment Variables
 
-- `OPENAI_API_KEY`: OpenAI API key for GPT-4 Vision
-- `GOOGLE_API_KEY`: Google API key for Gemini and Custom Search
-- `GOOGLE_SEARCH_ENGINE_ID`: Custom Search Engine ID for dish images
-- `ANTHROPIC_API_KEY`: Anthropic API key for Claude
+- `GOOGLE_GEMINI_API_KEY`: Google Gemini API key for menu interpretation and conversation
+- `GOOGLE_IMAGE_SEARCH_API_KEY`: Google Search Engine API key for dish image search
 
 ## Current Implementation Status
 

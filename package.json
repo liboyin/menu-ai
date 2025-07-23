@@ -21,6 +21,7 @@
   "homepage": "https://github.com/liboyin/menu-ai#readme",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^24.0.15",
     "@types/react": "^19.1.8",
