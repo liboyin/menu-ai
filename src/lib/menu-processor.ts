@@ -114,30 +114,33 @@ async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
 }
 
 async function searchDishImage(dishName: string): Promise<string> {
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY
-  const searchEngineId = process.env.GOOGLE_IMAGE_SEARCH_API_KEY
+  const apiKey = process.env.BING_IMAGE_SEARCH_API_KEY
   
-  if (!apiKey || !searchEngineId) {
-    throw new Error('Google API credentials (GOOGLE_GEMINI_API_KEY and GOOGLE_IMAGE_SEARCH_API_KEY) not found in environment variables')
+  if (!apiKey) {
+    throw new Error('BING_IMAGE_SEARCH_API_KEY not found in environment variables')
   }
 
   try {
     const searchQuery = `${dishName} food dish restaurant`
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(searchQuery)}&searchType=image&num=1&imgSize=medium&safe=active`
+    const url = `https://api.bing.microsoft.com/v7.0/images/search?q=${encodeURIComponent(searchQuery)}&count=1&imageType=Photo&safeSearch=Strict`
 
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: {
+        'Ocp-Apim-Subscription-Key': apiKey
+      }
+    })
     
     if (!response.ok) {
-      throw new Error(`Google Search API request failed with status ${response.status}: ${response.statusText}`)
+      throw new Error(`Bing Image Search API request failed with status ${response.status}: ${response.statusText}`)
     }
 
     const data = await response.json()
     
-    if (!data.items || data.items.length === 0) {
+    if (!data.value || data.value.length === 0) {
       throw new Error(`No images found for dish: "${dishName}"`)
     }
     
-    return data.items[0].link
+    return data.value[0].contentUrl
     
   } catch (error) {
     console.error(`Error searching for image of "${dishName}":`, error)
