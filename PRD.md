@@ -11,6 +11,7 @@
 | :------ | :--------- | :------------- |
 | 1.0     | 2025-07-21 | Initial draft. |
 | 1.1     | 2025-07-21 | Updated UI requirements for modern, mobile-first design. |
+| 1.2     | 2025-07-29 | Added support for missing prices and price inference. |
 
 ---
 
@@ -35,8 +36,9 @@ The user initiates the process by uploading one or more menu images. The system 
 
 * **F1.1 Image Upload:** The user shall be able to upload one or more images (`.jpg`, `.png`, `.webp`) of a restaurant menu via a drag-and-drop interface or a standard file selector.
 * **F1.2 (Revised) Multi-modal Menu Processing:** The system must use a multi-modal LLM to directly analyze the menu image(s) and extract structured information in a single step. The prompt for the model should instruct it to perform the following actions:
-    * **F1.2.1 Identify & Structure:** Analyze the visual layout to identify menu items and parse them into a structured format (e.g., JSON). For each item, it must extract the **name**, **price**, and any listed **description/ingredients**. It should correctly interpret visual hierarchy, columns, and various currency formats.
-    * **F1.2.2 Infer Ingredients:** If ingredients are *not* listed in an item's description, the system must use its knowledge (or a subsequent LLM call) to generate a list of probable primary ingredients based on the dish name.
+    * **F1.2.1 Identify & Structure:** Analyze the visual layout to identify menu items and parse them into a structured format (e.g., JSON). For each item, it must extract the **name**, **price** (or null if unavailable), and any listed **description/ingredients**. It should correctly interpret visual hierarchy, columns, and various currency formats.
+    * **F1.2.2 Price Handling:** The system must handle various pricing scenarios: explicit prices (e.g., "$12.99"), market pricing ("market price", "MP", "seasonal"), and inferred pricing (e.g., "all sandwiches $6"). When no specific price is available or pricing is market-based, the price field should be set to null.
+    * **F1.2.3 Infer Ingredients:** If ingredients are *not* listed in an item's description, the system must use its knowledge (or a subsequent LLM call) to generate a list of probable primary ingredients based on the dish name.
 * **F1.3 Fetch Dish Image:** For each structured menu item, the system must perform an online image search for the dish name and select a high-quality, representative photo to display.
 * **F1.4 Error Handling:** If the AI model cannot reliably interpret the image, the user should be notified with a clear error message (e.g., "We couldn't read this menu. The image might be too blurry or cut off.").
 
@@ -44,7 +46,7 @@ The user initiates the process by uploading one or more menu images. The system 
 
 The structured data is presented on a clean, interactive webpage where the user can ask questions.
 
-* **F2.1 Menu Visualization:** The processed menu shall be displayed as a series of cards optimized for mobile viewing. Each card must contain the dish name (as a heading), the fetched dish image, the list of ingredients, and the price. On mobile devices, cards should use a horizontal layout for better screen utilization.
+* **F2.1 Menu Visualization:** The processed menu shall be displayed as a series of cards optimized for mobile viewing. Each card must contain the dish name (as a heading), the fetched dish image, the list of ingredients, and the price (or "Market price" if unavailable). On mobile devices, cards should use a horizontal layout for better screen utilization.
 * **F2.2 Conversational AI (Chatbot):** The page must feature a chat interface that adapts to the device form factor.
     * **F2.2.1 Contextual Awareness:** The chatbot's knowledge must be strictly limited to the menu items and ingredients processed in the current session.
     * **F2.2.2 Dietary Queries:** Users must be able to ask dietary questions like, "What are the vegan options?", "Which dishes are gluten-free?", or "What doesn't contain nuts?".
@@ -55,7 +57,7 @@ The structured data is presented on a clean, interactive webpage where the user 
 
 The interactive menu page must include powerful filtering capabilities to help users narrow down their choices.
 
-* **F3.1 Filter by Price:** A price range input system shall be provided to allow users to filter dishes within a specific budget.
+* **F3.1 Filter by Price:** A price range input system shall be provided to allow users to filter dishes within a specific budget. Items without prices (market price items) are automatically included in all price range filters.
 * **F3.2 Filter by Ingredient:** A text input field shall allow users to filter dishes that **contain** a specific ingredient.
 * **F3.3 Ingredient Exclusion:** The ingredient filter must ignore a predefined list of trivial ingredients. This list shall initially include: **salt, water, pepper, sugar, and oil**.
 * **F3.4 Mobile Filter Interface:** On mobile devices, filters should be collapsible to save screen space, with clear visual indicators when filters are active.
@@ -107,6 +109,5 @@ This revised flow **removes the need for a separate OCR service**, reducing arch
 * **Out of Scope for v1.0:**
     * User accounts, saving menus, or viewing history.
     * Handling handwritten menus.
-    * Parsing complex pricing (e.g., "Market Price", different prices for sizes).
     * Restaurant location services or reviews.
     * Handling QR code menus directly (though a user could screenshot the menu from the QR code link and upload that).

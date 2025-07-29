@@ -5,9 +5,9 @@ A stateless web application that helps diners instantly understand restaurant me
 ## Features
 
 - **🖼️ Image Upload**: Intuitive drag-and-drop or file selector for menu photos (JPG, PNG, WEBP)
-- **🤖 AI Menu Processing**: Multi-modal AI extracts menu items, prices, and ingredients
+- **🤖 AI Menu Processing**: Multi-modal AI extracts menu items, prices (including market pricing), and ingredients
 - **📱 Mobile-Optimized Display**: Modern card-based menu visualization with horizontal layout for mobile
-- **🔍 Smart Filtering**: Collapsible filter system with price range and ingredient search
+- **🔍 Smart Filtering**: Collapsible filter system with price range and ingredient search (items without prices automatically included)
 - **💬 Conversational AI**: Modal chat interface on mobile, sidebar on desktop for dietary questions
 - **✨ Modern Design**: Glass-effect components, gradient styling, and smooth animations
 - **📲 Mobile-First**: Responsive design optimized for smartphone usage with touch-friendly interactions
@@ -49,17 +49,16 @@ A stateless web application that helps diners instantly understand restaurant me
 This MVP includes:
 - ✅ Complete mobile-first frontend with modern UI/UX
 - ✅ Responsive image upload with glass-effect styling
-- ✅ Horizontal menu cards optimized for mobile viewing
-- ✅ Collapsible filtering system with visual indicators
+- ✅ Horizontal menu cards optimized for mobile viewing with market price support
+- ✅ Collapsible filtering system with visual indicators (handles missing prices)
 - ✅ Modal chat interface for mobile, sidebar for desktop
 - ✅ Backend API structure with TypeScript
-- ⚠️ Mock AI responses (replace with real API calls)
-- ⚠️ Placeholder dish images (integrate with image search)
+- ✅ AI integration with Google Gemini for menu analysis and image search
+- ✅ Support for missing prices and price inference patterns
 
 To complete the implementation:
-1. Add your preferred AI API integration in `src/lib/menu-processor.ts`
-2. Implement image search in the same file
-3. Deploy to your preferred platform (Vercel, AWS, etc.)
+1. Add your API keys to `.env.local`
+2. Deploy to your preferred platform (Vercel, AWS, etc.)
 
 ## Design Features
 

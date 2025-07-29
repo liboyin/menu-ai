@@ -1,7 +1,7 @@
 export interface MenuItem {
   id: string
   name: string
-  price: string
+  price: string | null
   description?: string
   ingredients: string[]
   image?: string

@@ -13,14 +13,16 @@ export default function MenuFilters({ items, onFilteredItemsChange }: MenuFilter
   const [ingredientFilter, setIngredientFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   
-  const extractPrice = (priceStr: string): number => {
+  const extractPrice = (priceStr: string | null): number | null => {
+    if (!priceStr) return null
     const cleaned = priceStr.replace(/[^0-9.]/g, '')
-    return parseFloat(cleaned) || 0
+    const parsed = parseFloat(cleaned)
+    return isNaN(parsed) ? null : parsed
   }
 
-  const priceRangeValues = items.map(item => extractPrice(item.price))
-  const minPrice = Math.min(...priceRangeValues)
-  const maxPrice = Math.max(...priceRangeValues)
+  const priceRangeValues = items.map(item => extractPrice(item.price)).filter((price): price is number => price !== null)
+  const minPrice = priceRangeValues.length > 0 ? Math.min(...priceRangeValues) : 0
+  const maxPrice = priceRangeValues.length > 0 ? Math.max(...priceRangeValues) : 100
 
   useEffect(() => {
     setPriceRange([minPrice, maxPrice])
@@ -31,6 +33,7 @@ export default function MenuFilters({ items, onFilteredItemsChange }: MenuFilter
 
     filtered = filtered.filter(item => {
       const price = extractPrice(item.price)
+      if (price === null) return true // Include items without prices
       return price >= priceRange[0] && price <= priceRange[1]
     })
 

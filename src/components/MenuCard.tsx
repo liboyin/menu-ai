@@ -35,9 +35,15 @@ export default function MenuCard({ item }: MenuCardProps) {
             <h3 className="text-lg font-bold text-slate-900 leading-tight line-clamp-2 flex-1 pr-2">
               {item.name}
             </h3>
-            <span className="text-lg font-bold text-blue-600 whitespace-nowrap ml-2">
-              {item.price}
-            </span>
+            {item.price ? (
+              <span className="text-lg font-bold text-blue-600 whitespace-nowrap ml-2">
+                {item.price}
+              </span>
+            ) : (
+              <span className="text-sm text-slate-500 whitespace-nowrap ml-2 italic">
+                Market price
+              </span>
+            )}
           </div>
           
           {item.description && (

@@ -42,7 +42,7 @@ async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
       
       For each menu item, provide:
       1. name: The dish name exactly as written
-      2. price: The price exactly as shown (include currency symbol if present)
+      2. price: The price exactly as shown (include currency symbol if present), OR null if no price is available
       3. description: Any description or ingredients listed (if available)
       4. ingredients: A list of probable main ingredients based on the dish name and any listed ingredients
       
@@ -57,7 +57,13 @@ async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
         }
       ]
       
-      Rules:
+      Rules for pricing:
+      - If a specific price is shown (e.g., "$12.99", "€15.50"), include it exactly as displayed
+      - If the price says "market price", "MP", "seasonal", or similar, set price to null
+      - If you can infer a consistent pricing pattern (e.g., "all sandwiches $6", "all entrees $15"), apply that pattern to matching items
+      - If no price information is available at all for an item, set price to null
+      
+      Other rules:
       - Skip trivial ingredients like salt, water, pepper, sugar, oil
       - If no description is provided, leave the description field as an empty string
       - Generate reasonable ingredient lists based on common preparations of the dish
@@ -98,8 +104,7 @@ async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
     return menuItems.filter(item => 
       item && 
       typeof item === 'object' && 
-      item.name && 
-      item.price
+      item.name
     )
 
   } catch (error) {
