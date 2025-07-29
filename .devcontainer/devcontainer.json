@@ -6,7 +6,7 @@
             "username": "vscode"
         }
     },
-    "remoteUser": "vscode",
+    "remoteUser": "node",
     "mounts": [
         "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
     ],
