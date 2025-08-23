@@ -1,5 +1,6 @@
 import { ProcessedMenu, MenuItem } from '@/types/menu'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import * as https from 'https'
 
 export async function processMenuImages(images: File[]): Promise<ProcessedMenu> {
   try {
@@ -114,36 +115,50 @@ async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
 }
 
 async function searchDishImage(dishName: string): Promise<string> {
-  const apiKey = process.env.BING_IMAGE_SEARCH_API_KEY
-  
+  const apiKey = process.env.RAPIDAPI_KEY;
+
   if (!apiKey) {
-    throw new Error('BING_IMAGE_SEARCH_API_KEY not found in environment variables')
+    throw new Error('RAPIDAPI_KEY not found in environment variables');
   }
 
-  try {
-    const searchQuery = `${dishName} food dish restaurant`
-    const url = `https://api.bing.microsoft.com/v7.0/images/search?q=${encodeURIComponent(searchQuery)}&count=1&imageType=Photo&safeSearch=Strict`
-
-    const response = await fetch(url, {
-      headers: {
-        'Ocp-Apim-Subscription-Key': apiKey
-      }
-    })
-    
-    if (!response.ok) {
-      throw new Error(`Bing Image Search API request failed with status ${response.status}: ${response.statusText}`)
+  const options = {
+    method: 'GET',
+    hostname: 'real-time-image-search.p.rapidapi.com',
+    port: null,
+    path: `/search-images?query=${encodeURIComponent(dishName)}&limit=1&safe_search=on`,
+    headers: {
+      'x-rapidapi-key': apiKey,
+      'x-rapidapi-host': 'real-time-image-search.p.rapidapi.com'
     }
+  };
 
-    const data = await response.json()
-    
-    if (!data.value || data.value.length === 0) {
-      throw new Error(`No images found for dish: "${dishName}"`)
-    }
-    
-    return data.value[0].contentUrl
-    
-  } catch (error) {
-    console.error(`Error searching for image of "${dishName}":`, error)
-    throw new Error(`Failed to search for dish image: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, function (res) {
+      const chunks: any[] = [];
+
+      res.on('data', function (chunk) {
+        chunks.push(chunk);
+      });
+
+      res.on('end', function () {
+        try {
+          const body = Buffer.concat(chunks);
+          const data = JSON.parse(body.toString());
+          if (data.status === 'OK' && data.data.length > 0) {
+            resolve(data.data[0].url);
+          } else {
+            reject(new Error('No images found or API error.'));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', function (e) {
+      reject(e);
+    });
+
+    req.end();
+  });
 }
