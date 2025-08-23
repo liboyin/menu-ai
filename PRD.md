@@ -12,6 +12,7 @@
 | 1.0     | 2025-07-21 | Initial draft. |
 | 1.1     | 2025-07-21 | Updated UI requirements for modern, mobile-first design. |
 | 1.2     | 2025-07-29 | Added support for missing prices and price inference. |
+| 1.3     | 2025-08-23 | Implemented conversational AI chat and updated image search API. |
 
 ---
 
@@ -47,7 +48,7 @@ The user initiates the process by uploading one or more menu images. The system 
 The structured data is presented on a clean, interactive webpage where the user can ask questions.
 
 * **F2.1 Menu Visualization:** The processed menu shall be displayed as a series of cards optimized for mobile viewing. Each card must contain the dish name (as a heading), the fetched dish image, the list of ingredients, and the price (or "Market price" if unavailable). On mobile devices, cards should use a horizontal layout for better screen utilization.
-* **F2.2 Conversational AI (Chatbot):** The page must feature a chat interface that adapts to the device form factor.
+* **F2.2 Conversational AI (Chatbot):** The page must feature a chat interface that adapts to the device form factor. The chat functionality is powered by a generative AI model (e.g., Google Gemini) to provide natural and context-aware responses.
     * **F2.2.1 Contextual Awareness:** The chatbot's knowledge must be strictly limited to the menu items and ingredients processed in the current session.
     * **F2.2.2 Dietary Queries:** Users must be able to ask dietary questions like, "What are the vegan options?", "Which dishes are gluten-free?", or "What doesn't contain nuts?".
     * **F2.2.3 General Queries:** Users must be able to ask about specific dishes or types of food, such as "Do you have any omelettes?".
@@ -92,7 +93,7 @@ The updated, simpler serverless architecture is as follows:
 2.  **Cloud Storage (e.g., AWS S3 / Google Cloud Storage):** Receives the uploaded image. This event triggers the backend processing function.
 3.  **Backend (e.g., Python on AWS Lambda):** A serverless function orchestrates the simplified AI workflow:
     * **Step A (Combined Processing):** The function sends the image directly to a **Multi-modal LLM API (e.g., Google Gemini 2.5 Pro, OpenAI GPT-4.1)**. A carefully engineered prompt instructs the model to "see" the menu and return a clean JSON object containing all menu items with their name, price, and description.
-    * **Step B (Enrichment - Image Search):** The function iterates through the structured JSON from Step A. For each item name, it calls an image search API (e.g., **Google Custom Search API**) to get a URL for a representative photo.
+    * **Step B (Enrichment - Image Search):** The function iterates through the structured JSON from Step A. For each item name, it calls an image search API (e.g., **Real-time Image Search API**) to get a URL for a representative photo.
     * **Step C (Response):** The final, enriched JSON data is returned to the frontend.
 4.  **Frontend (Display & Chat):** Renders the JSON data. Chat sends the menu JSON and user query to the backend for a context-aware LLM response.
 

@@ -16,8 +16,8 @@ A stateless web application that helps diners instantly understand restaurant me
 
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **Backend**: Next.js API routes (Node.js)
-- **AI Integration**: Ready for OpenAI GPT-4 Vision, Google Gemini, or Anthropic Claude
-- **Image Search**: Placeholder implementation (ready for Google Custom Search API)
+- **AI Integration**: Google Gemini for menu analysis and chat
+- **Image Search**: Real-time Image Search on Rapid API
 
 ## Getting Started
 
@@ -27,10 +27,7 @@ A stateless web application that helps diners instantly understand restaurant me
    ```
 
 2. **Set up environment variables**:
-   ```bash
-   cp .env.example .env.local
-   # Add your API keys to .env.local
-   ```
+   Create a `.env.local` file in the root of the project and add your API keys.
 
 3. **Run the development server**:
    ```bash
@@ -41,8 +38,8 @@ A stateless web application that helps diners instantly understand restaurant me
 
 ## Environment Variables
 
-- `GOOGLE_GEMINI_API_KEY`: Google Gemini API key for menu interpretation and conversation
-- `GOOGLE_IMAGE_SEARCH_API_KEY`: Google Search Engine API key for dish image search
+- `GOOGLE_GEMINI_API_KEY`: Google Gemini API key for menu interpretation and conversation.
+- `RAPIDAPI_KEY`: Your RapidAPI key for the Real-time Image Search API.
 
 ## Current Implementation Status
 
@@ -53,7 +50,9 @@ This MVP includes:
 - ✅ Collapsible filtering system with visual indicators (handles missing prices)
 - ✅ Modal chat interface for mobile, sidebar for desktop
 - ✅ Backend API structure with TypeScript
-- ✅ AI integration with Google Gemini for menu analysis and image search
+- ✅ AI integration with Google Gemini for menu analysis
+- ✅ Conversational AI chat with Google Gemini
+- ✅ Real-time Image Search on Rapid API for dish images
 - ✅ Support for missing prices and price inference patterns
 
 To complete the implementation:
