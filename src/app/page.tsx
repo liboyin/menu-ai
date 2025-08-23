@@ -32,7 +32,8 @@ export default function HomePage() {
       const result = await response.json()
       setProcessedMenu(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      console.error('Error in handleImagesSelected:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsProcessing(false)
     }

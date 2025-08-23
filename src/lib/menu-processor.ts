@@ -1,42 +1,48 @@
-import { ProcessedMenu, MenuItem } from '@/types/menu'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import * as https from 'https'
+import { ProcessedMenu, MenuItem } from '@/types/menu';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as https from 'https';
 
 export async function processMenuImages(images: File[]): Promise<ProcessedMenu> {
   try {
     const base64Images = await Promise.all(
       images.map(async (image) => {
-        const buffer = await image.arrayBuffer()
-        const base64 = Buffer.from(buffer).toString('base64')
-        return `data:${image.type};base64,${base64}`
+        const buffer = await image.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString('base64');
+        return `data:${image.type};base64,${base64}`;
       })
-    )
+    );
 
-    const menuItems = await analyzeMenuWithAI(base64Images)
-    
+    const menuItems = await analyzeMenuWithAI(base64Images);
+
     const enrichedItems = await Promise.all(
       menuItems.map(async (item) => ({
         ...item,
-        image: await searchDishImage(item.name)
+        image: await searchDishImage(item.name),
       }))
-    )
+    );
 
-    return { items: enrichedItems }
+    return { items: enrichedItems };
   } catch (error) {
-    console.error('Error processing menu images:', error)
-    throw new Error('Failed to process menu images')
+    console.error('Error processing menu images:', error);
+    throw new Error(
+      `Failed to process menu images: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`
+    );
   }
 }
 
-async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
+async function analyzeMenuWithAI(
+  base64Images: string[]
+): Promise<MenuItem[]> {
   try {
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY
+    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GOOGLE_GEMINI_API_KEY not found in environment variables')
+      throw new Error('GOOGLE_GEMINI_API_KEY not found in environment variables');
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
       Analyze this restaurant menu image and extract all menu items in a structured format.
@@ -71,94 +77,107 @@ async function analyzeMenuWithAI(base64Images: string[]): Promise<MenuItem[]> {
       - Use sequential IDs starting from "1"
       - Only include actual food items, skip drinks, headers, or non-food text
       - Return only valid JSON, no additional text or formatting
-    `
+    `;
 
     const imageParts = base64Images.map((base64Image) => {
-      const [mimeData, data] = base64Image.split(',')
-      const mimeType = mimeData.match(/data:([^;]+)/)?.[1] || 'image/jpeg'
-      
+      const [mimeData, data] = base64Image.split(',');
+      const mimeType =
+        mimeData.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
+
       return {
         inlineData: {
           data: data,
-          mimeType: mimeType
-        }
-      }
-    })
+          mimeType: mimeType,
+        },
+      };
+    });
 
-    const result = await model.generateContent([prompt, ...imageParts])
-    const response = result.response
-    const text = response.text()
+    const result = await model.generateContent([prompt, ...imageParts]);
+    const response = result.response;
+    const text = response.text();
 
     // Extract JSON from the response (in case there's extra text)
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      throw new Error('No valid JSON found in AI response')
+      throw new Error('No valid JSON found in AI response');
     }
 
-    const menuItems = JSON.parse(jsonMatch[0])
-    
+    const menuItems = JSON.parse(jsonMatch[0]);
+
     // Validate the response structure
     if (!Array.isArray(menuItems)) {
-      throw new Error('AI response is not an array')
+      throw new Error('AI response is not an array');
     }
 
-    return menuItems.filter(item => 
-      item && 
-      typeof item === 'object' && 
-      item.name
-    )
-
+    return menuItems.filter(
+      (item) => item && typeof item === 'object' && item.name
+    );
   } catch (error) {
-    console.error('Error analyzing menu with AI:', error)
-    throw new Error(`Failed to analyze menu with AI: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    console.error('Error in analyzeMenuWithAI:', error);
+    throw new Error(
+      `Failed to analyze menu with AI: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`
+    );
   }
 }
 
 async function searchDishImage(dishName: string): Promise<string> {
-  const apiKey = process.env.RAPIDAPI_KEY;
+  try {
+    const apiKey = process.env.RAPIDAPI_KEY;
 
-  if (!apiKey) {
-    throw new Error('RAPIDAPI_KEY not found in environment variables');
-  }
-
-  const options = {
-    method: 'GET',
-    hostname: 'real-time-image-search.p.rapidapi.com',
-    port: null,
-    path: `/search-images?query=${encodeURIComponent(dishName)}&limit=1&safe_search=on`,
-    headers: {
-      'x-rapidapi-key': apiKey,
-      'x-rapidapi-host': 'real-time-image-search.p.rapidapi.com'
+    if (!apiKey) {
+      console.warn('RAPIDAPI_KEY not found, returning placeholder image.');
+      return 'https://placehold.co/600x400?text=Image+Not+Found';
     }
-  };
 
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, function (res) {
-      const chunks: any[] = [];
+    const options = {
+      method: 'GET',
+      hostname: 'real-time-image-search.p.rapidapi.com',
+      port: null,
+      path: `/search-images?query=${encodeURIComponent(
+        dishName
+      )}&limit=1&safe_search=on`,
+      headers: {
+        'x-rapidapi-key': apiKey,
+        'x-rapidapi-host': 'real-time-image-search.p.rapidapi.com',
+      },
+    };
 
-      res.on('data', function (chunk) {
-        chunks.push(chunk);
-      });
+    return await new Promise((resolve) => {
+      const req = https.request(options, function (res) {
+        const chunks: any[] = [];
 
-      res.on('end', function () {
-        try {
-          const body = Buffer.concat(chunks);
-          const data = JSON.parse(body.toString());
-          if (data.status === 'OK' && data.data.length > 0) {
-            resolve(data.data[0].url);
-          } else {
-            reject(new Error('No images found or API error.'));
+        res.on('data', function (chunk) {
+          chunks.push(chunk);
+        });
+
+        res.on('end', function () {
+          try {
+            const body = Buffer.concat(chunks);
+            const data = JSON.parse(body.toString());
+            if (data.status === 'OK' && data.data.length > 0) {
+              resolve(data.data[0].url);
+            } else {
+              console.warn(`No image found for "${dishName}", returning placeholder.`);
+              resolve('https://placehold.co/600x400?text=Image+Not+Found');
+            }
+          } catch (e) {
+            console.error(`Error parsing image search response for "${dishName}":`, e);
+            resolve('https://placehold.co/600x400?text=Image+Not+Found');
           }
-        } catch (e) {
-          reject(e);
-        }
+        });
       });
-    });
 
-    req.on('error', function (e) {
-      reject(e);
-    });
+      req.on('error', function (e) {
+        console.error(`Error during image search request for "${dishName}":`, e);
+        resolve('https://placehold.co/600x400?text=Image+Not+Found');
+      });
 
-    req.end();
-  });
+      req.end();
+    });
+  } catch (error) {
+    console.error(`Error in searchDishImage for "${dishName}":`, error);
+    return 'https://placehold.co/600x400?text=Image+Not+Found';
+  }
 }
