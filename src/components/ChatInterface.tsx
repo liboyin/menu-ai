@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { ProcessedMenu } from '@/types/menu'
 
 interface Message {
@@ -83,7 +84,7 @@ export default function ChatInterface({ menu }: ChatInterfaceProps) {
       }
 
       setMessages(prev => [...prev, botMessage])
-    } catch (error) {
+    } catch {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: 'Sorry, I encountered an error. Please try again.',
@@ -130,7 +131,9 @@ export default function ChatInterface({ menu }: ChatInterfaceProps) {
                   : 'bg-slate-50 text-slate-900 border border-slate-200'
               }`}
             >
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+              <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+              </div>
               <div className={`text-xs mt-2 ${message.isUser ? 'text-blue-100' : 'text-slate-500'}`}>
                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
