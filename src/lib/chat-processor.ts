@@ -2,6 +2,22 @@
 import { ProcessedMenu } from '@/types/menu';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+/**
+ * Generates an AI response to a user's question about the provided menu.
+ *
+ * The response is strictly grounded in the menu items supplied — the model is
+ * instructed not to answer questions outside the menu's scope.
+ *
+ * Args:
+ *   message: The user's question or request.
+ *   menu: The ProcessedMenu whose items form the AI's knowledge base.
+ *
+ * Returns:
+ *   A markdown-formatted string with the AI's answer.
+ *
+ * Throws:
+ *   Error if the API key is absent or the Gemini request fails.
+ */
 export async function generateChatResponse(message: string, menu: ProcessedMenu): Promise<string> {
   try {
     const apiKey = process.env.GOOGLE_GEMINI_API_KEY;

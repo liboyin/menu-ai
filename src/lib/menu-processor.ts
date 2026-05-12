@@ -2,6 +2,19 @@ import { ProcessedMenu, MenuItem } from '@/types/menu';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as https from 'https';
 
+/**
+ * Processes menu images by extracting structured item data via AI and enriching
+ * each item with a dish image from an image search API.
+ *
+ * Args:
+ *   images: Array of File objects representing menu photo uploads.
+ *
+ * Returns:
+ *   A ProcessedMenu whose items include name, price, ingredients, and image URL.
+ *
+ * Throws:
+ *   Error if AI analysis fails or the API key is missing.
+ */
 export async function processMenuImages(images: File[]): Promise<ProcessedMenu> {
   try {
     const base64Images = await Promise.all(
@@ -32,6 +45,20 @@ export async function processMenuImages(images: File[]): Promise<ProcessedMenu> 
   }
 }
 
+/**
+ * Sends base64-encoded menu images to Google Gemini and parses the structured
+ * menu items returned in the AI's JSON response.
+ *
+ * Args:
+ *   base64Images: Array of data-URI strings (data:<mime>;base64,<data>).
+ *
+ * Returns:
+ *   Array of partially-populated MenuItem objects (no image field yet).
+ *
+ * Throws:
+ *   Error if the API key is absent, the response contains no JSON array, or
+ *   the parsed value is not an array.
+ */
 async function analyzeMenuWithAI(
   base64Images: string[]
 ): Promise<MenuItem[]> {
@@ -122,6 +149,17 @@ async function analyzeMenuWithAI(
   }
 }
 
+/**
+ * Searches for a representative image of a dish using the Real-time Image
+ * Search API on RapidAPI.
+ *
+ * Args:
+ *   dishName: The name of the dish to search for.
+ *
+ * Returns:
+ *   A URL string for the first matching image, or a placeholder URL when no
+ *   image is found or the API key is missing.
+ */
 async function searchDishImage(dishName: string): Promise<string> {
   try {
     const apiKey = process.env.RAPIDAPI_KEY;
@@ -146,7 +184,7 @@ async function searchDishImage(dishName: string): Promise<string> {
 
     return await new Promise((resolve) => {
       const req = https.request(options, function (res) {
-        const chunks: any[] = [];
+        const chunks: Buffer[] = [];
 
         res.on('data', function (chunk) {
           chunks.push(chunk);
