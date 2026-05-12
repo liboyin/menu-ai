@@ -1,17 +1,23 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import MenuDisplay from './MenuDisplay';
-import { ProcessedMenu } from '@/types/menu';
+import { MenuItem, ProcessedMenu } from '@/types/menu';
 import { sampleProcessedMenu, emptyMenu } from '../test-helpers/menu-data';
 
 // Mock the child components
 jest.mock('./MenuCard', () => {
-  return function MockMenuCard({ item }: { item: any }) {
+  return function MockMenuCard({ item }: { item: MenuItem }) {
     return <div data-testid={`menu-card-${item.id}`}>{item.name}</div>;
   };
 });
 
 jest.mock('./MenuFilters', () => {
-  return function MockMenuFilters({ items, onFilteredItemsChange }: any) {
+  return function MockMenuFilters({
+    items,
+    onFilteredItemsChange,
+  }: {
+    items: MenuItem[];
+    onFilteredItemsChange: (items: MenuItem[]) => void;
+  }) {
     return (
       <div data-testid="menu-filters">
         <button onClick={() => onFilteredItemsChange(items.slice(0, 1))}>
@@ -23,7 +29,7 @@ jest.mock('./MenuFilters', () => {
 });
 
 jest.mock('./ChatInterface', () => {
-  return function MockChatInterface({ menu }: { menu: any }) {
+  return function MockChatInterface({ menu }: { menu: ProcessedMenu }) {
     return <div data-testid="chat-interface">Chat for {menu.items.length} items</div>;
   };
 });
@@ -117,8 +123,45 @@ describe('MenuDisplay', () => {
 
   it('shows chat interface with realistic menu context', () => {
     render(<MenuDisplay menu={mockMenu} onReset={mockOnReset} />);
-    
+
     expect(screen.getByTestId('chat-interface')).toBeInTheDocument();
     expect(screen.getByText('Chat for 10 items')).toBeInTheDocument();
+  });
+
+  it('closes mobile chat modal when overlay backdrop is clicked', () => {
+    render(<MenuDisplay menu={mockMenu} onReset={mockOnReset} />);
+
+    const chatToggleButton = screen.getAllByRole('button').find(button =>
+      button.querySelector('svg path[d*="M8 12h.01M12 12h.01M16 12h.01"]')
+    );
+    expect(chatToggleButton).toBeDefined();
+
+    fireEvent.click(chatToggleButton!);
+    expect(screen.getByText('Ask About Menu')).toBeInTheDocument();
+
+    const backdrop = document.querySelector('.bg-black.bg-opacity-50') as HTMLElement;
+    fireEvent.click(backdrop);
+
+    expect(screen.queryByText('Ask About Menu')).not.toBeInTheDocument();
+  });
+
+  it('closes mobile chat modal when X button is clicked', () => {
+    render(<MenuDisplay menu={mockMenu} onReset={mockOnReset} />);
+
+    const chatToggleButton = screen.getAllByRole('button').find(button =>
+      button.querySelector('svg path[d*="M8 12h.01M12 12h.01M16 12h.01"]')
+    );
+    expect(chatToggleButton).toBeDefined();
+
+    fireEvent.click(chatToggleButton!);
+    expect(screen.getByText('Ask About Menu')).toBeInTheDocument();
+
+    const closeButton = document.querySelector(
+      'svg path[d*="M6 18L18 6M6 6l12 12"]'
+    )?.closest('button') as HTMLElement;
+    expect(closeButton).toBeTruthy();
+    fireEvent.click(closeButton);
+
+    expect(screen.queryByText('Ask About Menu')).not.toBeInTheDocument();
   });
 });
