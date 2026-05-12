@@ -5,8 +5,8 @@ import { sampleMenuItems, edgeCaseMenuItems } from '../test-helpers/menu-data';
 
 // Mock Next.js Image component
 jest.mock('next/image', () => {
-  return function MockImage({ src, alt, ...props }: any) {
-    return <img src={src} alt={alt} {...props} />;
+  return function MockImage({ src, alt }: { src: string; alt: string }) {
+    return <img src={src} alt={alt} />;  // eslint-disable-line @next/next/no-img-element
   };
 });
 
@@ -72,7 +72,6 @@ describe('MenuCard', () => {
   });
 
   it('displays first 4 ingredients and shows count for additional ones', () => {
-    const gelato = sampleMenuItems[4]; // Lemon Meringue has 4 ingredients
     const itemWithManyIngredients = edgeCaseMenuItems[0]; // Has 8 ingredients
     render(<MenuCard item={itemWithManyIngredients} />);
     

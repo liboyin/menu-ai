@@ -1,5 +1,5 @@
 const mockResponse = {
-  on: jest.fn((event, callback) => {
+  on: jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
     if (event === 'data') {
       const chunk = Buffer.from(JSON.stringify({
         status: 'OK',
@@ -20,15 +20,14 @@ const mockResponse = {
 const mockRequest = {
   on: jest.fn(),
   end: jest.fn(() => {
-    // Immediately invoke the response callback to simulate receiving a response
-    const responseCallback = (global as any).mockResponseCallback;
+    const responseCallback = (global as { mockResponseCallback?: (res: typeof mockResponse) => void }).mockResponseCallback;
     if (responseCallback) {
       responseCallback(mockResponse);
     }
   }),
 };
 
-export const request = jest.fn((options, callback) => {
-  (global as any).mockResponseCallback = callback;
+export const request = jest.fn((options: unknown, callback: (res: typeof mockResponse) => void) => {
+  (global as { mockResponseCallback?: (res: typeof mockResponse) => void }).mockResponseCallback = callback;
   return mockRequest;
 });
