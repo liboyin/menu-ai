@@ -1,11 +1,20 @@
-import { generateChatResponse } from './chat-processor';
+import * as testee from './chat-processor';
 import { ProcessedMenu } from '@/types/menu';
 
 jest.mock('@google/generative-ai');
 
 describe('generateChatResponse', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     process.env.GOOGLE_GEMINI_API_KEY = 'test-key';
+  });
+
+  it('should throw when GOOGLE_GEMINI_API_KEY is missing', async () => {
+    delete process.env.GOOGLE_GEMINI_API_KEY;
+    const menu: ProcessedMenu = { items: [] };
+
+    await expect(testee.generateChatResponse('hello', menu)).rejects.toThrow(
+      'GOOGLE_GEMINI_API_KEY not found in environment variables'
+    );
   });
 
   it('should return a response from the AI about dessert menu', async () => {
@@ -31,7 +40,7 @@ describe('generateChatResponse', () => {
       ],
     };
 
-    const response = await generateChatResponse(message, menu);
+    const response = await testee.generateChatResponse(message, menu);
 
     expect(response).toBeDefined();
     expect(typeof response).toBe('string');
@@ -58,7 +67,7 @@ describe('generateChatResponse', () => {
       ],
     };
 
-    const response = await generateChatResponse(message, menu);
+    const response = await testee.generateChatResponse(message, menu);
 
     expect(response).toBeDefined();
     expect(typeof response).toBe('string');

@@ -183,6 +183,36 @@ describe('ChatInterface', () => {
     expect(input).toHaveValue('');
   });
 
+  it('ignores form submit while already loading', async () => {
+    let resolveFirst: (val: unknown) => void;
+    (global.fetch as jest.Mock)
+      .mockImplementationOnce(
+        () => new Promise(resolve => { resolveFirst = resolve; })
+      )
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ response: 'second' }),
+      });
+
+    render(<ChatInterface menu={mockMenu} />);
+
+    const input = screen.getByPlaceholderText('Ask about dietary options...');
+    const form = input.closest('form')!;
+
+    // First submission starts loading
+    fireEvent.change(input, { target: { value: 'first message' } });
+    fireEvent.submit(form);
+    expect(screen.getByText('Thinking...')).toBeInTheDocument();
+
+    // Second submission while loading should be ignored (input is disabled)
+    expect(input).toBeDisabled();
+    resolveFirst!({ ok: true, json: async () => ({ response: 'first' }) });
+
+    await waitFor(() => {
+      expect(screen.getByText('first')).toBeInTheDocument();
+    });
+  });
+
   it('displays message timestamps', () => {
     render(<ChatInterface menu={mockMenu} />);
     

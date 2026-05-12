@@ -155,6 +155,49 @@ describe('MenuFilters', () => {
     expect(mockOnFilteredItemsChange).toHaveBeenCalled();
   });
 
+  it('accepts a valid minimum price change within current range', () => {
+    render(<MenuFilters items={sampleMenuItems} onFilteredItemsChange={mockOnFilteredItemsChange} />);
+
+    const [minInput] = screen.getAllByRole('spinbutton');
+    // sampleMenuItems prices: 6..7.5 — changing min to 6.5 is valid (≤ max 7.5)
+    fireEvent.change(minInput, { target: { value: '6.5' } });
+
+    const calls = mockOnFilteredItemsChange.mock.calls;
+    const lastCall = calls[calls.length - 1][0];
+    // Items priced below 6.5 (Affogato at 6, Espresso/Macchiato at 2.5) should be filtered out
+    expect(lastCall.every((item: { price: string | null }) => {
+      const price = item.price ? parseFloat(item.price.replace(/[^0-9.]/g, '')) : null;
+      return price === null || price >= 6.5;
+    })).toBe(true);
+  });
+
+  it('accepts a valid maximum price change within current range', () => {
+    render(<MenuFilters items={sampleMenuItems} onFilteredItemsChange={mockOnFilteredItemsChange} />);
+
+    const [, maxInput] = screen.getAllByRole('spinbutton');
+    // Changing max to 7 is valid (≥ min 2.5)
+    fireEvent.change(maxInput, { target: { value: '7' } });
+
+    const calls = mockOnFilteredItemsChange.mock.calls;
+    const lastCall = calls[calls.length - 1][0];
+    // Items priced above 7 (Scugnizielli/Affogato Limoncello at 7.5) should be filtered out
+    expect(lastCall.every((item: { price: string | null }) => {
+      const price = item.price ? parseFloat(item.price.replace(/[^0-9.]/g, '')) : null;
+      return price === null || price <= 7;
+    })).toBe(true);
+  });
+
+  it('toggles filter panel via mobile toggle button', () => {
+    render(<MenuFilters items={mockItems} onFilteredItemsChange={mockOnFilteredItemsChange} />);
+
+    // Mobile toggle is the first button; click to expand
+    const toggleButton = screen.getAllByRole('button')[0];
+    fireEvent.click(toggleButton);
+
+    // Filter content should now be visible (showFilters = true)
+    expect(screen.getByText('Price Range')).toBeInTheDocument();
+  });
+
   it('handles items without prices in filtering', () => {
     const itemsWithNullPrice = [
       ...mockItems,
