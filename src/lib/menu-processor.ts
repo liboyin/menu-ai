@@ -173,7 +173,7 @@ async function searchDishImage(dishName: string): Promise<string> {
       method: 'GET',
       hostname: 'real-time-image-search.p.rapidapi.com',
       port: null,
-      path: `/search-images?query=${encodeURIComponent(
+      path: `/search?query=${encodeURIComponent(
         dishName
       )}&limit=1&safe_search=on`,
       headers: {
