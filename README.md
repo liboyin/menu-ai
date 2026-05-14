@@ -82,12 +82,7 @@ interface ProcessedMenu { items: MenuItem[] }
 
 ## Environment
 
-Create `.env.local` at the repo root:
-
-```
-GOOGLE_GEMINI_API_KEY=...
-RAPIDAPI_KEY=...
-```
+Copy `.env.example` at the repo root to `.env.local`, and provide your API keys:
 
 - `GOOGLE_GEMINI_API_KEY` — required. Both routes throw without it.
 - `RAPIDAPI_KEY` — optional. Without it, every dish gets the placeholder image.
