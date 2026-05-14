@@ -13,6 +13,8 @@
 | 1.1     | 2025-07-21 | Updated UI requirements for modern, mobile-first design. |
 | 1.2     | 2025-07-29 | Added support for missing prices and price inference. |
 | 1.3     | 2025-08-23 | Implemented conversational AI chat and updated image search API. |
+| 1.4     | 2026-05-15 | Aligned §5 architecture with direct API-route upload (no cloud storage), relaxed F1.4 error-message wording, clarified F3.3 trivial-ingredient exclusion happens at extraction, removed ingredient-inference disclaimer from §6. |
+| 1.5     | 2026-05-15 | Reduced §5 to a one-paragraph summary; implementation-level architecture and dataflow now live in `README.md`. |
 
 ---
 
@@ -41,7 +43,7 @@ The user initiates the process by uploading one or more menu images. The system 
     * **F1.2.2 Price Handling:** The system must handle various pricing scenarios: explicit prices (e.g., "$12.99"), market pricing ("market price", "MP", "seasonal"), and inferred pricing (e.g., "all sandwiches $6"). When no specific price is available or pricing is market-based, the price field should be set to null.
     * **F1.2.3 Infer Ingredients:** If ingredients are *not* listed in an item's description, the system must use its knowledge (or a subsequent LLM call) to generate a list of probable primary ingredients based on the dish name.
 * **F1.3 Fetch Dish Image:** For each structured menu item, the system must perform an online image search for the dish name and select a high-quality, representative photo to display.
-* **F1.4 Error Handling:** If the AI model cannot reliably interpret the image, the user should be notified with a clear error message (e.g., "We couldn't read this menu. The image might be too blurry or cut off.").
+* **F1.4 Error Handling:** If the AI model cannot reliably interpret the image, the backend must return an error response and the frontend must surface a generic failure notice (e.g., "Processing failed"). A bespoke, scenario-specific error message is not required.
 
 ### 3.2 Use Case 2: Interactive Menu Display & Conversation
 
@@ -60,7 +62,7 @@ The interactive menu page must include powerful filtering capabilities to help u
 
 * **F3.1 Filter by Price:** A price range input system shall be provided to allow users to filter dishes within a specific budget. Items without prices (market price items) are automatically included in all price range filters.
 * **F3.2 Filter by Ingredient:** A text input field shall allow users to filter dishes that **contain** a specific ingredient.
-* **F3.3 Ingredient Exclusion:** The ingredient filter must ignore a predefined list of trivial ingredients. This list shall initially include: **salt, water, pepper, sugar, and oil**.
+* **F3.3 Ingredient Exclusion:** Trivial ingredients must not appear in the structured menu data. This list shall initially include: **salt, water, pepper, sugar, and oil**. Exclusion is performed during menu extraction (via the multi-modal LLM prompt) rather than as a separate client-side filter, so these tokens are absent from `ingredients` arrays in the first place.
 * **F3.4 Mobile Filter Interface:** On mobile devices, filters should be collapsible to save screen space, with clear visual indicators when filters are active.
 
 ---
@@ -85,19 +87,9 @@ The interactive menu page must include powerful filtering capabilities to help u
 
 ---
 
-## 5. (Revised) High-Level Technical Architecture Proposal
+## 5. High-Level Technical Architecture
 
-The updated, simpler serverless architecture is as follows:
-
-1.  **Frontend (e.g., Next.js on Vercel):** The user interacts with the React-based frontend. On image upload, it sends the file(s) to a secure cloud storage location.
-2.  **Cloud Storage (e.g., AWS S3 / Google Cloud Storage):** Receives the uploaded image. This event triggers the backend processing function.
-3.  **Backend (e.g., Python on AWS Lambda):** A serverless function orchestrates the simplified AI workflow:
-    * **Step A (Combined Processing):** The function sends the image directly to a **Multi-modal LLM API (e.g., Google Gemini 2.5 Pro, OpenAI GPT-4.1)**. A carefully engineered prompt instructs the model to "see" the menu and return a clean JSON object containing all menu items with their name, price, and description.
-    * **Step B (Enrichment - Image Search):** The function iterates through the structured JSON from Step A. For each item name, it calls an image search API (e.g., **Real-time Image Search API**) to get a URL for a representative photo.
-    * **Step C (Response):** The final, enriched JSON data is returned to the frontend.
-4.  **Frontend (Display & Chat):** Renders the JSON data. Chat sends the menu JSON and user query to the backend for a context-aware LLM response.
-
-This revised flow **removes the need for a separate OCR service**, reducing architectural complexity.
+A single Next.js application with two stateless API routes: one ingests menu images via a multi-modal LLM in a single call and enriches each item with an image-search result, the other answers user questions grounded in the menu JSON supplied with each request. No OCR step, no intermediate cloud storage, no server-side session state. Implementation-level architecture and dataflow are documented in [`README.md`](README.md).
 
 ---
 
@@ -106,7 +98,7 @@ This revised flow **removes the need for a separate OCR service**, reducing arch
 * **Assumptions:**
     * The multi-modal LLM can handle various languages, but the primary target for v1.0 is English.
     * The system will use the first high-quality image returned from the image search API.
-    * Ingredient inference by the LLM is on a "best-effort" basis. This should be communicated to the user with a small disclaimer.
+    * Ingredient inference by the LLM is on a "best-effort" basis.
 * **Out of Scope for v1.0:**
     * User accounts, saving menus, or viewing history.
     * Handling handwritten menus.

@@ -1,96 +1,112 @@
 # MenuAI
 
-A stateless web application that helps diners instantly understand restaurant menus using AI-powered analysis. Features a modern, mobile-first design optimized for on-the-go menu scanning.
+A stateless web app that turns a photo of a restaurant menu into an interactive, filterable digital menu with an AI chat assistant grounded in that menu. See [PRD.md](PRD.md) for product scope.
 
-## Features
+## Architecture
 
-- **🖼️ Image Upload**: Intuitive drag-and-drop or file selector for menu photos (JPG, PNG, WEBP)
-- **🤖 AI Menu Processing**: Multi-modal AI extracts menu items, prices (including market pricing), and ingredients
-- **📱 Mobile-Optimized Display**: Modern card-based menu visualization with horizontal layout for mobile
-- **🔍 Smart Filtering**: Collapsible filter system with price range and ingredient search (items without prices automatically included)
-- **💬 Conversational AI**: Modal chat interface on mobile, sidebar on desktop for dietary questions
-- **✨ Modern Design**: Glass-effect components, gradient styling, and smooth animations
-- **📲 Mobile-First**: Responsive design optimized for smartphone usage with touch-friendly interactions
-
-## Tech Stack
-
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API routes (Node.js)
-- **AI Integration**: Google Gemini for menu analysis and chat
-- **Image Search**: Real-time Image Search on Rapid API
-
-## Getting Started
-
-1. **Clone and install dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment variables**:
-   Create a `.env.local` file in the root of the project and add your API keys.
-
-3. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Environment Variables
-
-- `GOOGLE_GEMINI_API_KEY`: Google Gemini API key for menu interpretation and conversation.
-- `RAPIDAPI_KEY`: Your RapidAPI key for the Real-time Image Search API.
-
-## Current Implementation Status
-
-This MVP includes:
-- ✅ Complete mobile-first frontend with modern UI/UX
-- ✅ Responsive image upload with glass-effect styling
-- ✅ Horizontal menu cards optimized for mobile viewing with market price support
-- ✅ Collapsible filtering system with visual indicators (handles missing prices)
-- ✅ Modal chat interface for mobile, sidebar for desktop
-- ✅ Backend API structure with TypeScript
-- ✅ AI integration with Google Gemini for menu analysis
-- ✅ Conversational AI chat with Google Gemini
-- ✅ Real-time Image Search on Rapid API for dish images
-- ✅ Support for missing prices and price inference patterns
-
-To complete the implementation:
-1. Add your API keys to `.env.local`
-2. Deploy to your preferred platform (Vercel, AWS, etc.)
-
-## Design Features
-
-- **Modern Aesthetic**: Glass-morphism effects with backdrop blur
-- **Mobile-First**: Optimized layouts for smartphone usage
-- **Touch-Friendly**: Large buttons and intuitive gestures
-- **Visual Hierarchy**: Clean typography with Inter font family
-- **Smooth Animations**: Micro-interactions and hover effects
-- **Gradient Styling**: Professional blue/slate color scheme
-
-## Project Structure
+Next.js 15 single-page app (App Router) with two API routes. No database, no session storage — the menu JSON lives in the browser state and is re-sent with every chat request.
 
 ```
 src/
-├── app/                 # Next.js app router
-│   ├── api/            # API routes
-│   ├── globals.css     # Global styles
-│   ├── layout.tsx      # Root layout
-│   └── page.tsx        # Home page
-├── components/         # React components
-├── lib/               # Utility functions
-└── types/             # TypeScript type definitions
+├── app/
+│   ├── api/
+│   │   ├── process-menu/route.ts   POST: images → ProcessedMenu
+│   │   └── chat/route.ts           POST: { message, menu } → { response }
+│   ├── layout.tsx                  Root layout + metadata
+│   ├── page.tsx                    Upload-or-display switch
+│   └── globals.css                 Tailwind entry + custom utilities
+├── components/
+│   ├── ImageUpload.tsx             Drag-drop / file picker (JPG/PNG/WEBP)
+│   ├── MenuDisplay.tsx             Header, filter+card list, chat container
+│   ├── MenuCard.tsx                Single-dish horizontal card
+│   ├── MenuFilters.tsx             Price range + ingredient search
+│   └── ChatInterface.tsx           Chat panel (sidebar desktop, modal mobile)
+├── lib/
+│   ├── menu-processor.ts           Gemini vision call + image enrichment
+│   └── chat-processor.ts           Gemini chat call grounded in menu JSON
+├── types/menu.ts                   MenuItem, ProcessedMenu
+└── test-helpers/menu-data.ts       Shared fixtures
 ```
+
+The single shared type is in [src/types/menu.ts](src/types/menu.ts):
+
+```ts
+interface MenuItem {
+  id: string
+  name: string
+  price: string | null          // raw string with currency, or null for market/unknown
+  description?: string
+  ingredients: string[]
+  image?: string                // URL from image search or placeholder
+}
+interface ProcessedMenu { items: MenuItem[] }
+```
+
+## Dataflow
+
+**Upload → Display:**
+
+1. User selects/drops images in [ImageUpload](src/components/ImageUpload.tsx). The client filters to `image/jpeg|png|webp` and POSTs a `multipart/form-data` with field name `images` to `/api/process-menu`.
+2. [`processMenuImages`](src/lib/menu-processor.ts) base64-encodes each image, calls Gemini (`gemini-2.5-flash`) once with all images plus a prompt that asks for a strict JSON array of `{id, name, price, description, ingredients}`. A regex extracts the first `[...]` block from the response.
+3. For each item, [`searchDishImage`](src/lib/menu-processor.ts) calls the RapidAPI Real-time Image Search endpoint by dish name and attaches the first result URL. Failures (missing key, network error, no result) resolve to `https://placehold.co/600x400?text=Image+Not+Found` rather than throwing.
+4. The enriched `ProcessedMenu` is returned to the client and stored in React state. [MenuDisplay](src/components/MenuDisplay.tsx) takes over the page.
+
+**Filtering:** [MenuFilters](src/components/MenuFilters.tsx) computes min/max from numeric prices (currency symbols stripped via `replace(/[^0-9.]/g, '')`) and recomputes the filtered list whenever range or ingredient text changes. Items with `price === null` always pass the price filter. Ingredient match is a case-insensitive substring over `item.ingredients`.
+
+**Chat:** [ChatInterface](src/components/ChatInterface.tsx) POSTs `{ message, menu }` JSON to `/api/chat`. [`generateChatResponse`](src/lib/chat-processor.ts) inlines the full menu JSON into a system-style prompt that tells Gemini to answer only from the menu and refuse out-of-scope questions. The response is rendered as markdown via `react-markdown`.
+
+## Design Decisions
+
+- **Single multi-modal call, no OCR step.** Gemini handles layout interpretation, text extraction, and structuring in one prompt — the PRD originally proposed OCR + LLM and was revised to drop OCR.
+- **Stateless / no backend storage.** The menu JSON is the only state. Chat re-sends it each turn so the server has zero session memory; this also makes the API trivially horizontal-scalable.
+- **`price` is `string | null`, not a number.** Preserves currency symbols and original formatting for display. Numeric conversion only happens inside the filter for range comparison.
+- **Null-priced items pass every price filter.** A "market price" dish should never be hidden by a budget slider — the user has no number to compare against, so excluding it would be a silent data loss.
+- **Trivial ingredients filtered at the LLM prompt**, not in client code. The prompt explicitly skips salt/water/pepper/sugar/oil so they never enter the data model.
+- **Image search failures degrade, not fail.** Menu rendering must work even when RAPIDAPI_KEY is missing, so `searchDishImage` returns a placeholder URL on every error path. `next.config.js` allows remote images from any host because dish image URLs are arbitrary.
+- **Chat is sidebar on desktop, full-height modal on mobile.** `MenuDisplay` renders `<ChatInterface>` twice — once in `hidden lg:block` for desktop and once inside a `lg:hidden` modal toggled by a header button.
+- **Model:** `gemini-2.5-flash` for both endpoints, chosen for cost/latency over Pro.
+
+## API
+
+### `POST /api/process-menu`
+- Body: `multipart/form-data`, field `images` (one or more files)
+- 200: `ProcessedMenu`
+- 400: `{ error: "No images provided" }`
+- 500: `{ error: "Failed to process menu images" }`
+
+### `POST /api/chat`
+- Body: `application/json`, `{ message: string, menu: ProcessedMenu }`
+- 200: `{ response: string }` (markdown)
+- 400: `{ error: "Message and menu are required" }`
+- 500: `{ error: "Failed to process chat message" }`
+
+## Environment
+
+Create `.env.local` at the repo root:
+
+```
+GOOGLE_GEMINI_API_KEY=...
+RAPIDAPI_KEY=...
+```
+
+- `GOOGLE_GEMINI_API_KEY` — required. Both routes throw without it.
+- `RAPIDAPI_KEY` — optional. Without it, every dish gets the placeholder image.
+
+## Development
+
+The repo ships a dev container ([.devcontainer/devcontainer.json](.devcontainer/devcontainer.json), `mcr.microsoft.com/devcontainers/typescript-node`). Per [AGENTS.md](AGENTS.md), AI agents should work inside the container.
+
+```bash
+npm install
+npm run dev          # next dev on http://localhost:3000
+npm run build        # production build
+npm run lint         # next lint (ESLint flat config, next/core-web-vitals + next/typescript)
+npm run test         # jest
+npm run test:coverage   # jest --coverage; 85% gate on statements/branches/functions/lines
+```
+
+Tests use Jest + `jest-environment-jsdom` + `@testing-library/react`. Module-level mocks live alongside their targets (`src/lib/__mocks__/https.ts`, `src/lib/__mocks__/@google/generative-ai.ts`, `src/__mocks__/react-markdown.tsx`). Shared fixtures are in [src/test-helpers/menu-data.ts](src/test-helpers/menu-data.ts). Test conventions are documented in [AGENTS.md](AGENTS.md).
 
 ## Deployment
 
-This app is designed for serverless deployment:
-
-- **Vercel**: Deploy with `npm run build` (recommended)
-- **AWS Lambda**: Use Serverless Framework or AWS CDK
-- **Google Cloud Functions**: Deploy with Firebase or Google Cloud
-- **Azure Functions**: Use Azure Static Web Apps
-
-## License
-
-MIT License - see LICENSE file for details
+Designed for serverless platforms (Vercel is the natural fit given Next.js). API routes are stateless and read both keys from environment variables at request time.
