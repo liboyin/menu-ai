@@ -8,10 +8,6 @@
         }
     },
     "postCreateCommand": "npm install",
-    "remoteEnv": {
-        "GOOGLE_GEMINI_API_KEY": "${localEnv:GOOGLE_GEMINI_API_KEY}",
-        "RAPIDAPI_KEY": "${localEnv:RAPIDAPI_KEY}"
-    },
     "mounts": [
         "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly=true",
         "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly=true"
