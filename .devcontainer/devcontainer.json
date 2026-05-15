@@ -1,6 +1,17 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/typescript-node",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22",
     "remoteUser": "node",
+    "forwardPorts": [3000],
+    "portsAttributes": {
+        "3000": {
+            "label": "Next.js dev server"
+        }
+    },
+    "postCreateCommand": "npm install",
+    "remoteEnv": {
+        "GOOGLE_GEMINI_API_KEY": "${localEnv:GOOGLE_GEMINI_API_KEY}",
+        "RAPIDAPI_KEY": "${localEnv:RAPIDAPI_KEY}"
+    },
     "mounts": [
         "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly=true",
         "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly=true"
