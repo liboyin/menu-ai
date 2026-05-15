@@ -26,7 +26,7 @@ export async function generateChatResponse(message: string, menu: ProcessedMenu)
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
     const chatPrompt = `
       You are a helpful restaurant menu assistant. Your knowledge is strictly limited to the provided menu.

@@ -64,7 +64,7 @@ interface ProcessedMenu { items: MenuItem[] }
 - **Trivial ingredients filtered at the LLM prompt**, not in client code. The prompt explicitly skips salt/water/pepper/sugar/oil so they never enter the data model.
 - **Image search failures degrade, not fail.** Menu rendering must work even when RAPIDAPI_KEY is missing, so `searchDishImage` returns a placeholder URL on every error path. `next.config.js` allows remote images from any host because dish image URLs are arbitrary.
 - **Chat is sidebar on desktop, full-height modal on mobile.** `MenuDisplay` renders `<ChatInterface>` twice — once in `hidden lg:block` for desktop and once inside a `lg:hidden` modal toggled by a header button.
-- **Model:** `gemini-2.5-flash` for both endpoints, chosen for cost/latency over Pro.
+- **Model:** `gemini-3.1-flash-lite` for both endpoints, chosen for cost/latency over Pro.
 
 ## API
 
