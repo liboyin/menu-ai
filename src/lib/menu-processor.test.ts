@@ -20,7 +20,7 @@ beforeAll(() => {
 
 describe('processMenuImages', () => {
   const imageFile = (() => {
-    const imagePath = path.resolve(__dirname, '../../sample_menu.jpg');
+    const imagePath = path.resolve(__dirname, '../../assets/sample_menu.jpg');
     const imageBuffer = fs.readFileSync(imagePath);
     return {
       type: 'image/jpeg',

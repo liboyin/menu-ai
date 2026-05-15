@@ -38,21 +38,23 @@ This plan validates the functional and non-functional requirements in [PRD.md](P
 ### 2.2 Test fixtures
 | Fixture | Path | Purpose |
 | :--- | :--- | :--- |
-| `sample_menu.jpg` | `$REPO/sample_menu.jpg` | Known-good menu, used by UAT-02 / UAT-03 / UAT-07 onward |
-| `not_a_menu.png` | tester-supplied | Photo of an unrelated subject for UAT-21 |
-| `category_priced_menu.jpg` | tester-supplied | Menu whose prices are stated per category (e.g. "Sandwiches $15") rather than per item, for UAT-25 |
-| `non_image.txt` | tester-supplied | Plain text file for UAT-05 (invalid file-type rejection) |
-
-The tester is responsible for sourcing `not_a_menu.png`, `category_priced_menu.jpg`, and `non_image.txt`. If unavailable, mark the corresponding scenarios as **Blocked**, not Failed.
+| `sample_menu.jpg` | `$REPO/assets/sample_menu.jpg` | Known-good menu, used by UAT-02 / UAT-03 / UAT-07 onward |
+| `not_a_menu.jpg` | `$REPO/assets/not_a_menu.jpg` | Photo of an unrelated subject for UAT-21 |
+| `category_priced_menu.jpg` | `$REPO/assets/category_priced_menu.jpg` | Menu whose prices are stated per category (e.g. "Sandwiches $15") rather than per item, for UAT-25 |
+| `non_image.txt` | `$REPO/assets/non_image.txt` (gitignored — created in §2.3) | Plain text file for UAT-05 (invalid file-type rejection) |
 
 ### 2.3 Bring-up sequence (run once per session)
 1. From `$REPO`, run `npm install` (only if `node_modules/` is stale).
-2. Start the dev server in a terminal: `npm run dev`. Wait for the line `▲ Next.js … Ready in …`.
-3. In Claude Code, instruct the agent to:
+2. Create the non-image fixture if it does not exist (it is gitignored):
+   ```bash
+   echo 'not a menu' > "$REPO/assets/non_image.txt"
+   ```
+3. Start the dev server in a terminal: `npm run dev`. Wait for the line `▲ Next.js … Ready in …`.
+4. In Claude Code, instruct the agent to:
    - `browser_install` (only on first run).
    - `browser_navigate` to `http://localhost:3000`.
    - `browser_snapshot` and confirm the landing-page header reads **"MenuAI"**.
-4. Verify [.env.local](.env.local) is loaded by checking the dev server log — there should be no `GOOGLE_GEMINI_API_KEY is not set` warning on the first upload.
+5. Verify [.env.local](.env.local) is loaded by checking the dev server log — there should be no `GOOGLE_GEMINI_API_KEY is not set` warning on the first upload.
 
 ### 2.4 Tear-down
 - Close the browser (`browser_close`).
@@ -127,10 +129,10 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 **Maps to:** F1.1, F1.2, F1.3
 **Run on:** Desktop (primary), Mobile (smoke)
 
-- **Pre:** UAT-01 passed; `sample_menu.jpg` exists at `$REPO/sample_menu.jpg`.
+- **Pre:** UAT-01 passed; `sample_menu.jpg` exists at `$REPO/assets/sample_menu.jpg`.
 - **Steps:**
   1. `browser_snapshot` to locate the **Choose Photos** label (it wraps the hidden `<input type="file">`).
-  2. `browser_file_upload` with `["$REPO/sample_menu.jpg"]`.
+  2. `browser_file_upload` with `["$REPO/assets/sample_menu.jpg"]`.
   3. Wait for the upload area to show "Analyzing menu..." and the spinner overlay (`browser_wait_for` text "Processing...").
   4. `browser_wait_for` text "dishes found" with a generous timeout (NF4 target: under 20 s; cap the wait at **45 s** to allow Gemini latency).
 - **Expected:**
@@ -148,7 +150,7 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 - **Pre:** UAT-01 passed; on landing page.
 - **Steps:**
   1. `browser_snapshot` to get the drop-zone `ref`.
-  2. `browser_drag` with `sample_menu.jpg` from the OS file path onto the drop zone. (Use Playwright-MCP's file-drag helper; if unsupported, simulate via `DataTransfer` in `browser_evaluate` — see §6.)
+  2. `browser_drag` with `assets/sample_menu.jpg` from the OS file path onto the drop zone. (Use Playwright-MCP's file-drag helper; if unsupported, simulate via `DataTransfer` in `browser_evaluate` — see §6.)
   3. Observe drop-zone style change: border becomes blue, background slightly scaled.
   4. Wait for processing to complete as in UAT-02.
 - **Expected:** During drag-over, the snapshot shows the drop-zone class includes `border-blue-400`. After drop, behaviour matches UAT-02.
@@ -160,10 +162,10 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 **Maps to:** F1.1 ("one or more images")
 **Run on:** Desktop
 
-- **Pre:** Landing page; two valid menu images available (`sample_menu.jpg` + a second one; if a second is not available, mark **Blocked**).
+- **Pre:** Landing page; two valid menu images available (`assets/sample_menu.jpg` + a second one; if a second is not available, mark **Blocked**).
 - **Steps:** `browser_file_upload` with both paths in a single call.
 - **Expected:** Single `POST /api/process-menu` with both files as `images[]` (verify via `browser_network_requests`). Resulting menu contains items from both images.
-- **Pass criteria:** Both requests merged into one response; combined item count > items from `sample_menu.jpg` alone.
+- **Pass criteria:** Both requests merged into one response; combined item count > items from `assets/sample_menu.jpg` alone.
 
 ---
 
@@ -171,8 +173,8 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 **Maps to:** F1.1 (input `accept` filter)
 **Run on:** Desktop
 
-- **Pre:** Landing page; `non_image.txt` available.
-- **Steps:** `browser_file_upload` with `["$REPO/non_image.txt"]`.
+- **Pre:** Landing page; `assets/non_image.txt` exists (created in §2.3).
+- **Steps:** `browser_file_upload` with `["$REPO/assets/non_image.txt"]`.
 - **Expected:** No network request is made; the drop zone remains in its idle state (see `ImageUpload.tsx:38-44` — the component filters by MIME type before calling `onImagesSelected`).
 - **Pass criteria:** `browser_network_requests` shows **no** `/api/process-menu` call; no error banner appears; UI is unchanged.
 
@@ -184,7 +186,7 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 
 - **Pre:** Landing page.
 - **Steps:**
-  1. `browser_file_upload` with `sample_menu.jpg`.
+  1. `browser_file_upload` with `assets/sample_menu.jpg`.
   2. Immediately `browser_snapshot`.
 - **Expected:** Spinner overlay present; "Choose Photos" button gone; drop zone has `opacity-50 pointer-events-none`. The user cannot trigger a second upload while one is in flight.
 - **Pass criteria:** Element states match. Time from upload to first paint of the menu screen logged and **must be < 20 s** for a baseline-quality menu image (NF4).
@@ -402,7 +404,7 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 **Maps to:** F1.4
 **Run on:** Desktop
 
-- **Pre:** Landing page. `not_a_menu.png` available.
+- **Pre:** Landing page. `assets/not_a_menu.jpg` exists at `$REPO/assets/not_a_menu.jpg`.
 - **Steps:** Upload the unreadable image.
 - **Expected:** Per PRD §3.1 F1.4 (v1.4+), the backend must return an error response when the model cannot reliably interpret the image, and the frontend must surface a generic failure notice. Acceptable outcomes:
   - Backend returns 500 with `{ error: "Failed to process menu images" }` → frontend shows the red glass-effect "Processing failed" card (see `src/app/page.tsx:72-90`). **This is the expected path.**
@@ -453,9 +455,9 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 **Maps to:** F1.2.2
 **Run on:** Desktop
 
-- **Pre:** Landing page; `category_priced_menu.jpg` available. The fixture must depict a menu where each dish's price is **not** printed next to the dish — instead, a single price is stated at the category/section level (e.g. a "Sandwiches — $15" header above a list of named sandwiches, or "All pizzas $18"). Include at least two categories with different prices so the inference is observable.
+- **Pre:** Landing page; `assets/category_priced_menu.jpg` exists at `$REPO/assets/category_priced_menu.jpg`. The fixture must depict a menu where each dish's price is **not** printed next to the dish — instead, a single price is stated at the category/section level (e.g. a "Sandwiches — $15" header above a list of named sandwiches, or "All pizzas $18"). Include at least two categories with different prices so the inference is observable.
 - **Steps:**
-  1. `browser_file_upload` with `["$REPO/category_priced_menu.jpg"]`.
+  1. `browser_file_upload` with `["$REPO/assets/category_priced_menu.jpg"]`.
   2. Wait for processing to complete (same timing budget as UAT-02).
   3. `browser_snapshot` and read the price on every rendered card.
   4. Inspect the `POST /api/process-menu` response in `browser_network_requests` and confirm each `items[].price` matches the category header in the fixture.
@@ -476,7 +478,7 @@ Each functional scenario runs **once per applicable viewport** as called out in 
 - **Pre:** Landing page. The tester needs the ability to either (a) temporarily unset `RAPIDAPI_KEY` in `.env.local` and restart the dev server, or (b) monkey-patch `window.fetch` via `browser_evaluate` to fail outbound image-search calls. Option (a) is the simpler path.
 - **Steps:**
   1. Stop the dev server, comment out `RAPIDAPI_KEY` in `.env.local`, restart with `npm run dev`.
-  2. Upload `sample_menu.jpg` as in UAT-02.
+  2. Upload `assets/sample_menu.jpg` as in UAT-02.
   3. After processing, `browser_snapshot` and inspect the image slot of several cards.
   4. Open the `POST /api/process-menu` response in `browser_network_requests` and read `items[].image`.
 - **Expected:**
@@ -494,7 +496,7 @@ Some Playwright-MCP versions do not expose a first-class file-drag helper. If `b
 
 ```js
 async (target) => {
-  const file = await (await fetch('/_uat/sample_menu.jpg')).blob().then(
+  const file = await (await fetch('/_uat/assets/sample_menu.jpg')).blob().then(
     b => new File([b], 'sample_menu.jpg', { type: 'image/jpeg' })
   );
   const dt = new DataTransfer();
@@ -505,7 +507,7 @@ async (target) => {
 }
 ```
 
-To serve `sample_menu.jpg` from the dev server, copy it to `public/_uat/sample_menu.jpg` before starting the run. **Remember to remove it after UAT** — it is a test artifact, not production content.
+To serve `sample_menu.jpg` from the dev server, copy it from `assets/sample_menu.jpg` to `public/_uat/assets/sample_menu.jpg` before starting the run. **Remember to remove it after UAT** — it is a test artifact, not production content.
 
 ### 6.2 Snapshots vs. screenshots
 Always assert on `browser_snapshot` (accessibility tree) — it is deterministic across DPRs and theme changes. Use `browser_take_screenshot` only for evidence attachments on failed scenarios.

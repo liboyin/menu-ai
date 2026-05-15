@@ -7,6 +7,7 @@ A stateless web app that turns a photo of a restaurant menu into an interactive,
 Next.js 15 single-page app (App Router) with two API routes. No database, no session storage — the menu JSON lives in the browser state and is re-sent with every chat request.
 
 ```
+assets/                             UAT test fixtures (images committed; non_image.txt gitignored)
 src/
 ├── app/
 │   ├── api/
