@@ -1,0 +1,69 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies (reinstalled in deps stage)
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output (rebuilt in builder stage)
+.next
+out
+dist
+*.tsbuildinfo
+
+# Test output and caches
+coverage
+.nyc_output
+.eslintcache
+.swc
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Editor/IDE and OS metadata
+.vscode
+.idea
+.devcontainer
+.DS_Store
+Thumbs.db
+
+# AI agent configuration
+.claude
+
+# Logs and runtime
+logs
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Docs and project metadata not needed at runtime
+*.md
+CLAUDE.md
+
+# Docker artifacts
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# UAT fixtures (not used by the production build)
+assets
+
+# Test helpers and mocks (excluded from production image)
+src/__mocks__
+src/test-helpers
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+jest.config.js
+jest.setup.js
+
+# Misc scripts
+update_dependencies.sh
