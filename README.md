@@ -48,7 +48,7 @@ interface ProcessedMenu { items: MenuItem[] }
 **Upload → Display:**
 
 1. User selects/drops images in [ImageUpload](src/components/ImageUpload.tsx). The client filters to `image/jpeg|png|webp` and POSTs a `multipart/form-data` with field name `images` to `/api/process-menu`.
-2. [`processMenuImages`](src/lib/menu-processor.ts) base64-encodes each image, calls Gemini (`gemini-2.5-flash`) once with all images plus a prompt that asks for a strict JSON array of `{id, name, price, description, ingredients}`. A regex extracts the first `[...]` block from the response.
+2. [`processMenuImages`](src/lib/menu-processor.ts) base64-encodes each image, calls Gemini (`gemini-3.1-flash-lite`) once with all images plus a prompt that asks for a strict JSON array of `{id, name, price, description, ingredients}`. A regex extracts the first `[...]` block from the response.
 3. For each item, [`searchDishImage`](src/lib/menu-processor.ts) calls the RapidAPI Real-time Image Search endpoint by dish name and attaches the first result URL. Failures (missing key, network error, no result) resolve to `https://placehold.co/600x400?text=Image+Not+Found` rather than throwing.
 4. The enriched `ProcessedMenu` is returned to the client and stored in React state. [MenuDisplay](src/components/MenuDisplay.tsx) takes over the page.
 
