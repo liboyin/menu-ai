@@ -113,8 +113,4 @@ Tests use Jest + `jest-environment-jsdom` + `@testing-library/react`. Module-lev
 
 ## Deployment
 
-Designed for serverless platforms (Vercel is the natural fit given Next.js). API routes are stateless and read both keys from environment variables at request time.
-
-**Self-hosting via Docker Compose:** [docker-compose.yml](docker-compose.yml) brings up the app alongside a Redis sidecar and wires `REDIS_URL` automatically. Provide `GOOGLE_GEMINI_API_KEY` and `RAPIDAPI_KEY` via your shell or a root-level `.env`, then `docker compose up --build`.
-
-**Vercel:** set `GOOGLE_GEMINI_API_KEY`, `RAPIDAPI_KEY`, and a Redis URL (Vercel KV or Upstash) under Environment Variables. Without `REDIS_URL` the in-memory limiter still works inside a single Lambda, but each cold start and each parallel Lambda instance keeps its own counter, so the per-IP cap effectively multiplies by the number of warm instances.
+The app runs as a Next.js Node server on any platform that supports the bundled [Dockerfile](Dockerfile). Step-by-step recipes for the two supported targets — Fly.io and self-hosted Docker Compose — live in [DEPLOYMENT.md](DEPLOYMENT.md).
