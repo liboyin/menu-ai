@@ -70,12 +70,6 @@ export default function MenuCard({ item }: MenuCardProps) {
             </div>
           </div>
           
-          <div className="mt-3 flex items-center">
-            <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-2"></div>
-            <p className="text-xs text-slate-500">
-              AI-analyzed ingredients
-            </p>
-          </div>
         </div>
       </div>
     </div>

@@ -120,7 +120,6 @@ Each functional scenario runs **once per applicable viewport** as called out in 
   - Tagline "Upload any menu photo and instantly understand every dish with AI".
   - Drop zone with text "Upload menu photos" and "Choose Photos" button.
   - File-type hints "JPG", "PNG", "WEBP".
-  - Three feature bullets ("Instant ingredient analysis", "Smart dietary filtering", "Ask questions about dishes").
 - **Pass criteria:** All elements present; `browser_console_messages` returns no `error` entries.
 
 ---
@@ -205,7 +204,6 @@ Each functional scenario runs **once per applicable viewport** as called out in 
   - Either a formatted price (e.g. `$12.99`) **or** italic text "Market price".
   - When `item.description` is present, a paragraph rendered with `line-clamp-2` below the price row (truncated to two lines).
   - Up to 4 ingredient pills + `"+N more"` overflow when applicable.
-  - Footer "AI-analyzed ingredients" disclaimer.
 - **Pass criteria:** No card has missing name; no card crashes due to absent fields. At least one inspected card with a `description` shows the truncated paragraph; at least one without `description` omits it entirely.
 
 ---

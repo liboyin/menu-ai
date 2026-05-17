@@ -19,7 +19,6 @@ describe('MenuCard', () => {
     expect(screen.getByText('Fatto Tiramisu')).toBeInTheDocument();
     expect(screen.getByText('7')).toBeInTheDocument();
     expect(screen.getByText('Coffee liqueur soaked sponge, mascarpone, chocolate')).toBeInTheDocument();
-    expect(screen.getByText('AI-analyzed ingredients')).toBeInTheDocument();
   });
 
   it('displays the image when provided', () => {
