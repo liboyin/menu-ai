@@ -27,7 +27,7 @@ input.dispatchEvent(new Event('change', { bubbles: true }));
 ### Issue 2: Gemini API key blocked (initial key)
 **Symptom:** The initial `GOOGLE_GEMINI_API_KEY` returned HTTP 403 `"Your API key is blocked. Please use a Gemini API restricted API key."` from both Node.js (server-side) and the browser. All API-dependent tests would have failed.  
 **Resolution:** User rotated the key. New key confirmed working via direct curl to `/api/process-menu`.  
-**Note:** The model name in `src/lib/menu-processor.ts` was changed to `gemini-3.1-flash-lite` — this model name does not exist in the public Gemini API catalogue (valid names include `gemini-2.0-flash-lite`, `gemini-1.5-flash`, etc.). The API call currently succeeds, which suggests the server may be mapping the name or using a preview/internal endpoint. **Recommend verifying the model name is intentional.**
+**Note:** The model name in `src/lib/menu-processor.ts` is `gemini-3.1-flash-lite`, which does not appear in the public Gemini API catalogue. The API call succeeds regardless. Product owner confirmed this name is intentional (DEF-05 closed).
 
 ### Issue 3: Dev server crash after `pkill` during UAT-26
 **Symptom:** After killing the dev server to test RAPIDAPI_KEY removal, restarting it produced a build error: `Cannot find module '../lightningcss.darwin-arm64.node'`.  
@@ -42,7 +42,7 @@ input.dispatchEvent(new Event('change', { bubbles: true }));
 **Symptom:** Several SVG icons (upload cloud, filter chevron) rendered at ~1370×1370px instead of 20×20px, pushing all page content far below the visible viewport.  
 **Root cause:** Tailwind v4 (`@tailwindcss/postcss@^4.1.11`) is installed but `src/app/globals.css` still uses Tailwind v3 directives (`@tailwind base/components/utilities`). This causes fixed-size width/height classes (`w-4`, `w-5`, `w-6`, `w-8`, `h-4`, `h-5`, `h-6`, `h-8`) to be absent from the generated CSS bundle. The SVG elements expand to their intrinsic size.  
 **Workaround during UAT:** Used `scroll_to` with accessibility tree refs and coordinate-based clicks to interact with off-screen elements. DOM assertions used `getBoundingClientRect()` rather than screenshots.  
-**Permanent fix:** A separate task has been spawned to update `globals.css` to use `@import "tailwindcss"` (Tailwind v4 syntax). See spawned task chip.
+**Permanent fix:** `globals.css` updated to `@import "tailwindcss"` (Tailwind v4 syntax); `tailwind.config.js` removed (v4 auto-detects content). Fixed in commit `1d13d8f`. DEF-01 closed.
 
 ---
 
@@ -99,12 +99,12 @@ input.dispatchEvent(new Event('change', { bubbles: true }));
 |---|---|
 | All smoke scenarios pass on Mobile and Desktop | **Yes** |
 | No open S1 defects | **Yes** |
-| No open S2 defects (other than Tailwind CSS build issue — fix in progress) | **Pending fix** |
+| No open S2 defects | **Yes** — DEF-01 (Tailwind CSS) fixed in commit `1d13d8f` |
 | NF4: process-menu p50 < 20s | **Relaxed** — observed ~35s; target accepted as-is |
 | NF4: chat round-trip p50 < 5s | **Yes** — ~6s observed, within tolerance |
 | No app-origin console errors on clean run | **Yes** |
 
-**Overall: UAT conditionally passed** pending resolution of DEF-01 (Tailwind CSS).
+**Overall: UAT passed.**
 
 ---
 
@@ -121,8 +121,10 @@ input.dispatchEvent(new Event('change', { bubbles: true }));
 
 | ID | Severity | Status | Resolution |
 |---|---|---|---|
-| DEF-01 | **S2** | **Open** | Tailwind v4 CSS fix spawned as separate task |
+| DEF-01 | **S2** | **Fixed** | `globals.css` updated to `@import "tailwindcss"`; `tailwind.config.js` removed (commit `1d13d8f`) |
 | DEF-02 | **S3** | **Fixed** | LLM prompt updated to always output `$X.XX` format (`menu-processor.ts`) |
 | DEF-03 | **S3** | **Fixed** | `page.tsx` now treats `items:[]` response as an error, showing "Processing failed" card |
 | DEF-04 | **S3** | **Closed** | Latency target relaxed; ~35s accepted for current model |
 | DEF-05 | **S4** | **Closed** | `gemini-3.1-flash-lite` confirmed intentional |
+
+All defects resolved. No open items.
