@@ -6,4 +6,18 @@ services:
     environment:
       GOOGLE_GEMINI_API_KEY: ${GOOGLE_GEMINI_API_KEY}
       RAPIDAPI_KEY: ${RAPIDAPI_KEY}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped

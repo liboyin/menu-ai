@@ -24,7 +24,8 @@ src/
 │   └── ChatInterface.tsx           Chat panel (sidebar desktop, modal mobile)
 ├── lib/
 │   ├── menu-processor.ts           Gemini vision call + image enrichment
-│   └── chat-processor.ts           Gemini chat call grounded in menu JSON
+│   ├── chat-processor.ts           Gemini chat call grounded in menu JSON
+│   └── rate-limit.ts               Per-IP rate limiting (Memory or Redis)
 ├── types/menu.ts                   MenuItem, ProcessedMenu
 └── test-helpers/menu-data.ts       Shared fixtures
 ```
@@ -66,6 +67,7 @@ interface ProcessedMenu { items: MenuItem[] }
 - **Image search failures degrade, not fail.** Menu rendering must work even when RAPIDAPI_KEY is missing, so `searchDishImage` returns a placeholder URL on every error path. `next.config.js` allows remote images from any host because dish image URLs are arbitrary.
 - **Chat is sidebar on desktop, full-height modal on mobile.** `MenuDisplay` renders `<ChatInterface>` twice — once in `hidden lg:block` for desktop and once inside a `lg:hidden` modal toggled by a header button.
 - **Model:** `gemini-3.1-flash-lite` for both endpoints, chosen for cost/latency over Pro.
+- **Rate limiting is per-IP and shared via Redis when `REDIS_URL` is set.** Both routes consume one point per call against a 10-per-hour bucket keyed on the first `x-forwarded-for` entry (Vercel and most reverse proxies set this). When `REDIS_URL` is unset, the limiter falls back to a per-process in-memory store — fine for single-container self-hosts, but insufficient on Vercel or behind a load balancer where each instance keeps its own counter. The limiter fails *open* (logs and allows) when Redis is unreachable, since its purpose is to cap third-party API spend, not enforce correctness.
 
 ## API
 
@@ -73,13 +75,17 @@ interface ProcessedMenu { items: MenuItem[] }
 - Body: `multipart/form-data`, field `images` (1–4 files, max 5MB each)
 - 200: `ProcessedMenu`
 - 400: `{ error: "No images provided" }` / `{ error: "Too many images: limit is 4" }` / `{ error: "Image \"<name>\" exceeds 5MB limit" }`
+- 429: `{ error: "Rate limit exceeded. Please try again later." }` — with `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining` headers
 - 500: `{ error: "Failed to process menu images" }`
 
 ### `POST /api/chat`
 - Body: `application/json`, `{ message: string, menu: ProcessedMenu }`
 - 200: `{ response: string }` (markdown)
 - 400: `{ error: "Message and menu are required" }`
+- 429: `{ error: "Rate limit exceeded. Please try again later." }` — with `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining` headers
 - 500: `{ error: "Failed to process chat message" }`
+
+Successful responses also carry `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers reflecting the caller's current bucket.
 
 ## Environment
 
@@ -87,6 +93,7 @@ Copy `.env.example` at the repo root to `.env.local`, and provide your API keys:
 
 - `GOOGLE_GEMINI_API_KEY` — required. Both routes throw without it.
 - `RAPIDAPI_KEY` — optional. Without it, every dish gets the placeholder image.
+- `REDIS_URL` — optional locally, required for multi-instance deployments (Vercel, multi-container self-hosts). Without it the rate limiter is per-process. The bundled [docker-compose.yml](docker-compose.yml) wires this to a sidecar Redis automatically.
 
 ## Development
 
@@ -106,3 +113,7 @@ Tests use Jest + `jest-environment-jsdom` + `@testing-library/react`. Module-lev
 ## Deployment
 
 Designed for serverless platforms (Vercel is the natural fit given Next.js). API routes are stateless and read both keys from environment variables at request time.
+
+**Self-hosting via Docker Compose:** [docker-compose.yml](docker-compose.yml) brings up the app alongside a Redis sidecar and wires `REDIS_URL` automatically. Provide `GOOGLE_GEMINI_API_KEY` and `RAPIDAPI_KEY` via your shell or a root-level `.env`, then `docker compose up --build`.
+
+**Vercel:** set `GOOGLE_GEMINI_API_KEY`, `RAPIDAPI_KEY`, and a Redis URL (Vercel KV or Upstash) under Environment Variables. Without `REDIS_URL` the in-memory limiter still works inside a single Lambda, but each cold start and each parallel Lambda instance keeps its own counter, so the per-IP cap effectively multiplies by the number of warm instances.
