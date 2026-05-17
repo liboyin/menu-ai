@@ -172,7 +172,7 @@ async function searchDishImage(dishName: string): Promise<string> {
 
     if (!apiKey) {
       console.warn('RAPIDAPI_KEY not found, returning placeholder image.');
-      return 'https://placehold.co/600x400?text=Image+Not+Found';
+      return 'https://placehold.co/600x400.png?text=Image+Not+Found';
     }
 
     const options = {
@@ -204,18 +204,18 @@ async function searchDishImage(dishName: string): Promise<string> {
               resolve(data.data[0].url);
             } else {
               console.warn(`No image found for "${dishName}", returning placeholder.`);
-              resolve('https://placehold.co/600x400?text=Image+Not+Found');
+              resolve('https://placehold.co/600x400.png?text=Image+Not+Found');
             }
           } catch (e) {
             console.error(`Error parsing image search response for "${dishName}":`, e);
-            resolve('https://placehold.co/600x400?text=Image+Not+Found');
+            resolve('https://placehold.co/600x400.png?text=Image+Not+Found');
           }
         });
       });
 
       req.on('error', function (e) {
         console.error(`Error during image search request for "${dishName}":`, e);
-        resolve('https://placehold.co/600x400?text=Image+Not+Found');
+        resolve('https://placehold.co/600x400.png?text=Image+Not+Found');
       });
 
       req.setTimeout(8000, function () {
@@ -226,6 +226,6 @@ async function searchDishImage(dishName: string): Promise<string> {
     });
   } catch (error) {
     console.error(`Error in searchDishImage for "${dishName}":`, error);
-    return 'https://placehold.co/600x400?text=Image+Not+Found';
+    return 'https://placehold.co/600x400.png?text=Image+Not+Found';
   }
 }

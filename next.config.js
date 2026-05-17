@@ -2,7 +2,6 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    dangerouslyAllowSVG: true,
     remotePatterns: [
       {
         protocol: 'https',

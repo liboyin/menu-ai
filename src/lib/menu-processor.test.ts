@@ -135,7 +135,7 @@ describe('processMenuImages', () => {
 
     const result = await testee.processMenuImages([imageFile]);
 
-    expect(result.items[0].image).toBe('https://placehold.co/600x400?text=Image+Not+Found');
+    expect(result.items[0].image).toBe('https://placehold.co/600x400.png?text=Image+Not+Found');
 
     process.env.RAPIDAPI_KEY = 'test-key';
   });
@@ -160,7 +160,7 @@ describe('processMenuImages', () => {
 
     const result = await testee.processMenuImages([imageFile]);
 
-    expect(result.items[0].image).toBe('https://placehold.co/600x400?text=Image+Not+Found');
+    expect(result.items[0].image).toBe('https://placehold.co/600x400.png?text=Image+Not+Found');
   });
 
   it('should return placeholder image when image search returns invalid JSON', async () => {
@@ -183,7 +183,7 @@ describe('processMenuImages', () => {
 
     const result = await testee.processMenuImages([imageFile]);
 
-    expect(result.items[0].image).toBe('https://placehold.co/600x400?text=Image+Not+Found');
+    expect(result.items[0].image).toBe('https://placehold.co/600x400.png?text=Image+Not+Found');
   });
 
   it('should return placeholder image when image search request errors', async () => {
@@ -202,7 +202,7 @@ describe('processMenuImages', () => {
 
     const result = await testee.processMenuImages([imageFile]);
 
-    expect(result.items[0].image).toBe('https://placehold.co/600x400?text=Image+Not+Found');
+    expect(result.items[0].image).toBe('https://placehold.co/600x400.png?text=Image+Not+Found');
   });
 
   it('should return placeholder image when image search hangs past the request timeout', async () => {
@@ -230,6 +230,6 @@ describe('processMenuImages', () => {
 
     const result = await testee.processMenuImages([imageFile]);
 
-    expect(result.items[0].image).toBe('https://placehold.co/600x400?text=Image+Not+Found');
+    expect(result.items[0].image).toBe('https://placehold.co/600x400.png?text=Image+Not+Found');
   });
 });
