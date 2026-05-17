@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processMenuImages } from '@/lib/menu-processor'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+
+export const runtime = 'nodejs'
 
 // Vercel-specific: extend the serverless function timeout to 60s (Hobby plan
 // default is 10s, which is too short for a multi-image Gemini vision call).
@@ -28,6 +31,21 @@ export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
  */
 export async function POST(request: NextRequest) {
   try {
+    const rl = await checkRateLimit(getClientIp(request))
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil(rl.retryAfterMs / 1000).toString(),
+            'X-RateLimit-Limit': rl.limit.toString(),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      )
+    }
+
     const formData = await request.formData()
     const images = formData.getAll('images') as File[]
 
@@ -56,7 +74,12 @@ export async function POST(request: NextRequest) {
 
     const processedMenu = await processMenuImages(images)
 
-    return NextResponse.json(processedMenu)
+    return NextResponse.json(processedMenu, {
+      headers: {
+        'X-RateLimit-Limit': rl.limit.toString(),
+        'X-RateLimit-Remaining': rl.remaining.toString(),
+      },
+    })
   } catch (error) {
     console.error('Error processing menu:', error)
     return NextResponse.json(

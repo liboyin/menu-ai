@@ -7,8 +7,10 @@
 import { NextRequest } from 'next/server'
 import * as testee from './route'
 import * as menuProcessor from '@/lib/menu-processor'
+import * as rateLimit from '@/lib/rate-limit'
 
 jest.mock('@/lib/menu-processor')
+jest.mock('@/lib/rate-limit')
 
 const makeImage = (name: string, size: number): File =>
   ({ name, size, type: 'image/jpeg' }) as unknown as File
@@ -20,6 +22,7 @@ const makeRequest = (images: File[]): NextRequest => {
     getAll: (key: string) => (key === 'images' ? images : []),
   } as unknown as FormData
   return {
+    headers: { get: () => null },
     formData: () => Promise.resolve(fake),
   } as unknown as NextRequest
 }
@@ -27,6 +30,13 @@ const makeRequest = (images: File[]): NextRequest => {
 describe('POST /api/process-menu', () => {
   beforeEach(() => {
     jest.resetAllMocks()
+    jest.mocked(rateLimit.getClientIp).mockReturnValue('test-ip')
+    jest.mocked(rateLimit.checkRateLimit).mockResolvedValue({
+      allowed: true,
+      limit: 10,
+      remaining: 9,
+      retryAfterMs: 0,
+    })
   })
 
   it('returns 400 when no images are provided', async () => {
@@ -77,11 +87,29 @@ describe('POST /api/process-menu', () => {
     expect(menuProcessor.processMenuImages).toHaveBeenCalledWith(images)
   })
 
+  it('returns 429 when the caller is rate-limited and skips processing', async () => {
+    jest.mocked(rateLimit.checkRateLimit).mockResolvedValue({
+      allowed: false,
+      limit: 10,
+      remaining: 0,
+      retryAfterMs: 60_000,
+    })
+
+    const response = await testee.POST(makeRequest([makeImage('a.jpg', 1024)]))
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get('Retry-After')).toBe('60')
+    expect(response.headers.get('X-RateLimit-Limit')).toBe('10')
+    expect(response.headers.get('X-RateLimit-Remaining')).toBe('0')
+    expect(menuProcessor.processMenuImages).not.toHaveBeenCalled()
+  })
+
   it('returns 500 when processMenuImages throws', async () => {
     const images = [makeImage('a.jpg', 1024)]
     jest
       .mocked(menuProcessor.processMenuImages)
       .mockRejectedValue(new Error('boom'))
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     const response = await testee.POST(makeRequest(images))
 
@@ -89,5 +117,6 @@ describe('POST /api/process-menu', () => {
     expect(await response.json()).toEqual({
       error: 'Failed to process menu images',
     })
+    errorSpy.mockRestore()
   })
 })
