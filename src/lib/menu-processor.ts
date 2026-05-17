@@ -69,7 +69,7 @@ async function analyzeMenuWithAI(
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
 
     const prompt = `
       Analyze this restaurant menu image and extract all menu items in a structured format.
@@ -92,9 +92,10 @@ async function analyzeMenuWithAI(
       ]
       
       Rules for pricing:
-      - If a specific price is shown (e.g., "$12.99", "€15.50"), include it exactly as displayed
+      - Always format prices as "$X.XX" with a dollar sign and exactly two decimal places (e.g., "$12.99", "$7.00", "$6.50")
+      - If the menu shows a price in a non-dollar currency or without a symbol, convert it to this format using the numeric value
       - If the price says "market price", "MP", "seasonal", or similar, set price to null
-      - If you can infer a consistent pricing pattern (e.g., "all sandwiches $6", "all entrees $15"), apply that pattern to matching items
+      - If you can infer a consistent pricing pattern (e.g., "all sandwiches $6", "all entrees $15"), apply that pattern to matching items, formatted as "$X.XX"
       - If no price information is available at all for an item, set price to null
       
       Other rules:
