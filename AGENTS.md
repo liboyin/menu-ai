@@ -3,31 +3,34 @@ This file is intended for AI agents.
 # Meta Guidelines
 
 - If not running in a Docker container, stop and confirm with the user before continuing.
-- State assumptions explicitly. When ambiguity exists (e.g. two conflicting patterns), confirm with the user before continuing.
-- For multi-step plans or multiple isolated subtasks, spawn subagents.
+- State assumptions explicitly. When you notice ambiguity (e.g. two conflicting patterns, or a design choice with no stated rationale), confirm with the user before continuing.
+- Prefer spawning subagents to keep the main context window clean.
+- Before considering a task done, re-check that all instructions in this file are followed.
 
 # Documentation Guidelines
 
-- `README.md` describes project architecture, dataflow, and design decisions for both humans and AI agents.
-- If a design decision feels like an assumption, ask the user and record the explanation in `README.md`.
+- `README.md` describes project architecture, dataflow, design decisions, and assumptions for both humans and AI agents. It is the WHY document and must not be mixed with HOW content.
+- In contrast, `UAT_PLAN.md`, `UAT_SETUP.md`, and `DEPLOYMENT.md` are HOW documents.
 - New or modified functions/methods in non-test scripts require TSDoc/JSDoc comments; unit test functions require a one-line description (typically the `it(...)`/`test(...)` title).
 
 # Implementation Guidelines
 
 - Prefer the simplest implementation, even if it violates SOLID principles. No feature beyond what was asked.
-- Break changes into small, functionally isolated chunks; commit as you go. Commit messages must follow this template:
+- Use up-to-date features from languages, libraries, and frameworks.
+- Break changes into small, functionally isolated chunks; commit as you go.
+- Commit messages must follow this template:
 
 ```
 <Your name: Claude/Codex/Gemini/...>: <one-line summary>
 
-<One paragraph describing the change in detail. (If more than one paragraph is necessary, the change can probably be broken down.)>
+<One paragraph describing the change in detail. If more than one paragraph is necessary, the change can probably be broken down.>
 ```
 
 # Test Guidelines
 
 Tests must encode WHY behavior matters, not just WHAT it does. A test that does not fail when business logic changes is wrong.
 
-After any code change, all of the following must pass before the task is considered done (run from the repo root):
+After any code change, all of the following must pass:
 
 ```bash
 npm run test:coverage
@@ -49,5 +52,6 @@ Review your own changes before committing:
 - Is it bug-free?
 - Are there design flaws or anti-patterns?
 - Can it be simplified?
+- Anything else a senior reviewer would push back on? (Use judgment)
 
 Fix trivial issues. For others, stop and confirm with the user.
