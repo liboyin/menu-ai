@@ -152,6 +152,8 @@ describe('processMenuImages', () => {
       };
       return {
         on: jest.fn(),
+        setTimeout: jest.fn(),
+        destroy: jest.fn(),
         end: jest.fn(() => callback(mockRes)),
       };
     });
@@ -173,6 +175,8 @@ describe('processMenuImages', () => {
       };
       return {
         on: jest.fn(),
+        setTimeout: jest.fn(),
+        destroy: jest.fn(),
         end: jest.fn(() => callback(mockRes)),
       };
     });
@@ -190,8 +194,38 @@ describe('processMenuImages', () => {
         on: jest.fn((event: string, cb: (err: Error) => void) => {
           if (event === 'error') cb(new Error('Network failure'));
         }),
+        setTimeout: jest.fn(),
+        destroy: jest.fn(),
         end: jest.fn(),
       };
+    });
+
+    const result = await testee.processMenuImages([imageFile]);
+
+    expect(result.items[0].image).toBe('https://placehold.co/600x400?text=Image+Not+Found');
+  });
+
+  it('should return placeholder image when image search hangs past the request timeout', async () => {
+    const httpsModule = jest.requireMock('https') as { request: jest.Mock };
+
+    httpsModule.request.mockImplementationOnce(() => {
+      let errorHandler: ((err: Error) => void) | null = null;
+      let timeoutCb: (() => void) | null = null;
+      const req = {
+        on: jest.fn((event: string, cb: (err: Error) => void) => {
+          if (event === 'error') errorHandler = cb;
+        }),
+        setTimeout: jest.fn((_ms: number, cb: () => void) => {
+          timeoutCb = cb;
+        }),
+        destroy: jest.fn((err: Error) => {
+          if (errorHandler) errorHandler(err);
+        }),
+        end: jest.fn(() => {
+          if (timeoutCb) timeoutCb();
+        }),
+      };
+      return req;
     });
 
     const result = await testee.processMenuImages([imageFile]);

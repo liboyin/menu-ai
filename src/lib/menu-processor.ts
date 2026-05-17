@@ -154,12 +154,17 @@ async function analyzeMenuWithAI(
  * Searches for a representative image of a dish using the Real-time Image
  * Search API on RapidAPI.
  *
+ * The HTTPS request is capped at 8s so an unresponsive upstream never holds
+ * a serverless function open: on timeout the request is destroyed, the
+ * existing error path runs, and the function resolves to the placeholder.
+ *
  * Args:
  *   dishName: The name of the dish to search for.
  *
  * Returns:
  *   A URL string for the first matching image, or a placeholder URL when no
- *   image is found or the API key is missing.
+ *   image is found, the API key is missing, the upstream errors, or the
+ *   request times out.
  */
 async function searchDishImage(dishName: string): Promise<string> {
   try {
@@ -211,6 +216,10 @@ async function searchDishImage(dishName: string): Promise<string> {
       req.on('error', function (e) {
         console.error(`Error during image search request for "${dishName}":`, e);
         resolve('https://placehold.co/600x400?text=Image+Not+Found');
+      });
+
+      req.setTimeout(8000, function () {
+        req.destroy(new Error(`Image search timed out for "${dishName}"`));
       });
 
       req.end();

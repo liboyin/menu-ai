@@ -19,6 +19,8 @@ const mockResponse = {
 
 const mockRequest = {
   on: jest.fn(),
+  setTimeout: jest.fn(),
+  destroy: jest.fn(),
   end: jest.fn(() => {
     const responseCallback = (global as { mockResponseCallback?: (res: typeof mockResponse) => void }).mockResponseCallback;
     if (responseCallback) {
