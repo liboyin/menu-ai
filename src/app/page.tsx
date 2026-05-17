@@ -30,6 +30,9 @@ export default function HomePage() {
       }
 
       const result = await response.json()
+      if (!result.items || result.items.length === 0) {
+        throw new Error('Could not identify any menu items in this image. Please upload a clear photo of a restaurant menu.')
+      }
       setProcessedMenu(result)
     } catch (err) {
       console.error('Error in handleImagesSelected:', err);
