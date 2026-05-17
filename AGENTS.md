@@ -3,6 +3,7 @@ This file is intended for AI agents.
 # Meta Guidelines
 
 - If not running in a Docker container, stop and confirm with the user before continuing.
+- State assumptions explicitly. When ambiguity exists (e.g. two conflicting patterns), confirm with the user before continuing.
 - For multi-step plans or multiple isolated subtasks, spawn subagents.
 
 # Documentation Guidelines
@@ -13,16 +14,18 @@ This file is intended for AI agents.
 
 # Implementation Guidelines
 
-- Prefer the simplest implementation, even if it violates SOLID principles.
-- Break changes into small, functionally isolated chunks; commit as you go. Commit messages follow this template:
+- Prefer the simplest implementation, even if it violates SOLID principles. No feature beyond what was asked.
+- Break changes into small, functionally isolated chunks; commit as you go. Commit messages must follow this template:
 
 ```
 <Your name: Claude/Codex/Gemini/...>: <one-line summary>
 
-<One paragraph describing the change in detail>
+<One paragraph describing the change in detail. (If more than one paragraph is necessary, the change can probably be broken down.)>
 ```
 
 # Test Guidelines
+
+Tests must encode WHY behavior matters, not just WHAT it does. A test that does not fail when business logic changes is wrong.
 
 After any code change, all of the following must pass before the task is considered done (run from the repo root):
 
