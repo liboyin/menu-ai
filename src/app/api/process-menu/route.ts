@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processMenuImages } from '@/lib/menu-processor'
 
+// Vercel-specific: extend the serverless function timeout to 60s (Hobby plan
+// default is 10s, which is too short for a multi-image Gemini vision call).
+// Ignored on other platforms.
+export const maxDuration = 60
+
 /**
  * Handles POST /api/process-menu.
  *

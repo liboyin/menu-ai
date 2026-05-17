@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ProcessedMenu } from '@/types/menu'
 import { generateChatResponse } from '@/lib/chat-processor'
 
+// Vercel-specific: extend the serverless function timeout to 60s (Hobby plan
+// default is 10s, which can be too short for Gemini chat completions over a
+// large inlined menu). Ignored on other platforms.
+export const maxDuration = 60
+
 /**
  * Handles POST /api/chat.
  *
