@@ -70,9 +70,9 @@ interface ProcessedMenu { items: MenuItem[] }
 ## API
 
 ### `POST /api/process-menu`
-- Body: `multipart/form-data`, field `images` (one or more files)
+- Body: `multipart/form-data`, field `images` (1–4 files, max 5MB each)
 - 200: `ProcessedMenu`
-- 400: `{ error: "No images provided" }`
+- 400: `{ error: "No images provided" }` / `{ error: "Too many images: limit is 4" }` / `{ error: "Image \"<name>\" exceeds 5MB limit" }`
 - 500: `{ error: "Failed to process menu images" }`
 
 ### `POST /api/chat`

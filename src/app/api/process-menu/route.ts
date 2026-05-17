@@ -6,25 +6,31 @@ import { processMenuImages } from '@/lib/menu-processor'
 // Ignored on other platforms.
 export const maxDuration = 60
 
+// Caps on per-request upload work — bounds Gemini token cost, base64
+// expansion, and serverless memory before any third-party API is called.
+export const MAX_IMAGES = 4
+export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+
 /**
  * Handles POST /api/process-menu.
  *
  * Expects a multipart form with one or more image files under the key
- * "images". Delegates to processMenuImages and returns the structured menu
- * as JSON.
+ * "images". Validates per-request limits (count and per-file size), then
+ * delegates to processMenuImages and returns the structured menu as JSON.
  *
  * Args:
  *   request: The incoming Next.js request containing FormData.
  *
  * Returns:
- *   200 with ProcessedMenu JSON on success, 400 if no images are provided,
- *   or 500 on processing failure.
+ *   200 with ProcessedMenu JSON on success; 400 if no images are provided,
+ *   if more than MAX_IMAGES are sent, or if any image exceeds
+ *   MAX_IMAGE_SIZE_BYTES; or 500 on processing failure.
  */
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const images = formData.getAll('images') as File[]
-    
+
     if (!images || images.length === 0) {
       return NextResponse.json(
         { error: 'No images provided' },
@@ -32,8 +38,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (images.length > MAX_IMAGES) {
+      return NextResponse.json(
+        { error: `Too many images: limit is ${MAX_IMAGES}` },
+        { status: 400 }
+      )
+    }
+
+    const oversized = images.find((image) => image.size > MAX_IMAGE_SIZE_BYTES)
+    if (oversized) {
+      const limitMb = MAX_IMAGE_SIZE_BYTES / (1024 * 1024)
+      return NextResponse.json(
+        { error: `Image "${oversized.name}" exceeds ${limitMb}MB limit` },
+        { status: 400 }
+      )
+    }
+
     const processedMenu = await processMenuImages(images)
-    
+
     return NextResponse.json(processedMenu)
   } catch (error) {
     console.error('Error processing menu:', error)
