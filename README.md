@@ -4,7 +4,7 @@ A stateless web app that turns a photo of a restaurant menu into an interactive,
 
 ## Architecture
 
-Next.js 15 single-page app (App Router) with two API routes. No database, no session storage — the menu JSON lives in the browser state and is re-sent with every chat request.
+Next.js 16 single-page app (App Router) with two API routes. No database, no session storage — the menu JSON lives in the browser state and is re-sent with every chat request.
 
 ```
 assets/                             UAT test fixtures (images committed; non_image.txt gitignored)
@@ -106,7 +106,7 @@ npm run dev          # next dev on http://localhost:3000
 npm run build        # production build
 npm run lint         # next lint (ESLint flat config, next/core-web-vitals + next/typescript)
 npm run test         # jest
-npm run test:coverage   # jest --coverage; 85% gate on statements/branches/functions/lines
+npm run test:coverage   # jest --coverage; 80% gate on statements/branches/functions/lines
 ```
 
 Tests use Jest + `jest-environment-jsdom` + `@testing-library/react`. Module-level mocks live alongside their targets (`src/lib/__mocks__/https.ts`, `src/lib/__mocks__/@google/generative-ai.ts`, `src/__mocks__/react-markdown.tsx`). Shared fixtures are in [src/test-helpers/menu-data.ts](src/test-helpers/menu-data.ts). Test conventions are documented in [AGENTS.md](AGENTS.md).
