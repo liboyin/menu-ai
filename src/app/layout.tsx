@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: 'Upload a photo of any restaurant menu and get instant understanding with AI-powered analysis, ingredient information, and dietary filtering.',
 }
 
+/**
+ * Root App Router layout that wraps every page in the base HTML document.
+ *
+ * Args:
+ *   children: The page content rendered inside <body>.
+ */
 export default function RootLayout({
   children,
 }: {

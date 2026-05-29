@@ -22,6 +22,15 @@ const quickQuestions = [
   'Any nut-free options?'
 ]
 
+/**
+ * Chat sidebar that answers diner questions grounded in the given menu.
+ *
+ * Maintains the conversation locally and POSTs each question (with the full
+ * menu) to /api/chat, rendering the markdown reply.
+ *
+ * Args:
+ *   menu: The ProcessedMenu the assistant is allowed to answer about.
+ */
 export default function ChatInterface({ menu }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {

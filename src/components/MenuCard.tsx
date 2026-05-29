@@ -7,6 +7,14 @@ interface MenuCardProps {
   item: MenuItem
 }
 
+/**
+ * Renders a single menu item as a card: image (or a placeholder), name, price
+ * (or a market-price label when unset), description, and a truncated
+ * ingredient list.
+ *
+ * Args:
+ *   item: The menu item to display.
+ */
 export default function MenuCard({ item }: MenuCardProps) {
   return (
     <div className="glass-effect rounded-3xl overflow-hidden hover:shadow-soft transition-all duration-300 hover:transform hover:scale-105">

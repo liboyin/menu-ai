@@ -7,6 +7,16 @@ interface ImageUploadProps {
   isProcessing: boolean
 }
 
+/**
+ * Drag-and-drop / click image picker for menu photos.
+ *
+ * Accepts only image files and reports the chosen files to its parent;
+ * disables interaction while a menu is being processed.
+ *
+ * Args:
+ *   onImagesSelected: Called with the validated image files the user picked.
+ *   isProcessing: When true, the control is disabled to prevent re-submission.
+ */
 export default function ImageUpload({ onImagesSelected, isProcessing }: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false)
 

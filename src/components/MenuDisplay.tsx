@@ -11,6 +11,15 @@ interface MenuDisplayProps {
   onReset: () => void
 }
 
+/**
+ * Interactive menu view: a header with item count and reset, the filterable
+ * grid of MenuCards, and the chat assistant (sidebar on desktop, modal on
+ * mobile).
+ *
+ * Args:
+ *   menu: The processed menu to display.
+ *   onReset: Called when the user chooses to start over with a new menu.
+ */
 export default function MenuDisplay({ menu, onReset }: MenuDisplayProps) {
   const [filteredItems, setFilteredItems] = useState(menu.items)
   const [showChat, setShowChat] = useState(false)
