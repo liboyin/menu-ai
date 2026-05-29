@@ -29,8 +29,7 @@ This file contains guidelines that all AI agents MUST follow.
 
 - Tests MUST encode WHY behavior matters, not just WHAT it does. A test that does not fail when business logic changes is wrong.
 - Order test functions to match the source file's function order.
-- For function/utility modules, import the module under test as `import * as testee from './my-module'`; call functions as `testee.functionName` and mock attributes via `jest.spyOn(testee, 'attribute')` (or `jest.mocked(...)` for module-level mocks declared with `jest.mock(...)`). This rule does NOT apply to default-exported React components, which MUST be imported via the idiomatic default import (`import MyComponent from './MyComponent'`).
-- Line, function, statement, and branch coverage MUST each be ≥80% for each file and at the project level.
+- Line, function, statement, and branch coverage MUST each be ≥80% for each file and at the project level. (See `jest.config.js`)
 - After any code change, all of the following unit tests and static analysis MUST pass:
 
 ```bash
