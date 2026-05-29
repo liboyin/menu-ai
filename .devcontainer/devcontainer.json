@@ -1,16 +1,21 @@
 {
     "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22",
+    "features": {
+        "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+    },
     "remoteUser": "node",
+    // devcontainer-features/claude-code installs as root, so ~/.claude and ~/.claude/plugins are owned by root
+    "postCreateCommand": "sudo chown node:node ~/.claude ~/.claude/plugins && npm install",
     "forwardPorts": [3000],
     "portsAttributes": {
         "3000": {
             "label": "Next.js dev server"
         }
     },
-    "postCreateCommand": "npm install",
     "mounts": [
-        "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly=true",
-        "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly=true"
+        "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly",
+        "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly",
+        "source=${localEnv:HOME}/.claude/plugins/installed_plugins.json,target=/home/node/.claude/plugins/installed_plugins.json,type=bind"
     ],
     "customizations": {
         "vscode": {
