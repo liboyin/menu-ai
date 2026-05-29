@@ -2,51 +2,38 @@
 
 import { useState, useEffect } from 'react'
 import { MenuItem } from '@/types/menu'
+import { getPriceBounds, filterMenuItems } from '@/lib/menu-filters'
 
 interface MenuFiltersProps {
   items: MenuItem[]
   onFilteredItemsChange: (items: MenuItem[]) => void
 }
 
+/**
+ * Renders the price-range and ingredient filter controls for a menu and
+ * pushes the filtered item list up to its parent via onFilteredItemsChange.
+ *
+ * Filtering logic is delegated to the pure helpers in lib/menu-filters; this
+ * component owns only the filter UI and its local state.
+ *
+ * Args:
+ *   items: The full set of menu items to filter.
+ *   onFilteredItemsChange: Callback invoked with the filtered items whenever
+ *     the price range or ingredient term changes.
+ */
 export default function MenuFilters({ items, onFilteredItemsChange }: MenuFiltersProps) {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
   const [ingredientFilter, setIngredientFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   
-  const extractPrice = (priceStr: string | null): number | null => {
-    if (!priceStr) return null
-    const cleaned = priceStr.replace(/[^0-9.]/g, '')
-    const parsed = parseFloat(cleaned)
-    return isNaN(parsed) ? null : parsed
-  }
-
-  const priceRangeValues = items.map(item => extractPrice(item.price)).filter((price): price is number => price !== null)
-  const minPrice = priceRangeValues.length > 0 ? Math.min(...priceRangeValues) : 0
-  const maxPrice = priceRangeValues.length > 0 ? Math.max(...priceRangeValues) : 100
+  const { min: minPrice, max: maxPrice } = getPriceBounds(items)
 
   useEffect(() => {
     setPriceRange([minPrice, maxPrice])
   }, [minPrice, maxPrice])
 
   useEffect(() => {
-    let filtered = items
-
-    filtered = filtered.filter(item => {
-      const price = extractPrice(item.price)
-      if (price === null) return true // Include items without prices
-      return price >= priceRange[0] && price <= priceRange[1]
-    })
-
-    if (ingredientFilter.trim()) {
-      const filterTerm = ingredientFilter.toLowerCase().trim()
-      filtered = filtered.filter(item =>
-        item.ingredients.some(ingredient =>
-          ingredient.toLowerCase().includes(filterTerm)
-        )
-      )
-    }
-
-    onFilteredItemsChange(filtered)
+    onFilteredItemsChange(filterMenuItems(items, priceRange, ingredientFilter))
   }, [priceRange, ingredientFilter, items, onFilteredItemsChange])
 
   const handlePriceRangeChange = (index: number, value: string) => {
