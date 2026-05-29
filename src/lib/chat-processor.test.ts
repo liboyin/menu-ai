@@ -1,5 +1,6 @@
 import * as testee from './chat-processor';
 import { ProcessedMenu } from '@/types/menu';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 jest.mock('@google/generative-ai');
 
@@ -44,6 +45,19 @@ describe('generateChatResponse', () => {
 
     expect(response).toBeDefined();
     expect(typeof response).toBe('string');
+  });
+
+  it('should include "Unknown error" in the message when the AI throws a non-Error value', async () => {
+    jest.mocked(GoogleGenerativeAI).mockImplementationOnce(() => ({
+      getGenerativeModel: jest.fn().mockReturnValue({
+        generateContent: jest.fn().mockRejectedValue('string error'),
+      }),
+    }) as never);
+
+    const menu: ProcessedMenu = { items: [] };
+    await expect(testee.generateChatResponse('hello', menu)).rejects.toThrow(
+      'Failed to generate chat response: Unknown error'
+    );
   });
 
   it('should handle coffee and liqueur questions', async () => {
