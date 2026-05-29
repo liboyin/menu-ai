@@ -4,7 +4,15 @@ import { useState } from 'react'
 import ImageUpload from '@/components/ImageUpload'
 import MenuDisplay from '@/components/MenuDisplay'
 import { ProcessedMenu } from '@/types/menu'
+import { processMenuRequest } from '@/lib/menu-client'
 
+/**
+ * Top-level page: lets the user upload menu photos, processes them via the
+ * API, and swaps in the interactive MenuDisplay once a menu is returned.
+ *
+ * Owns the processing/error/result UI state; the network call itself is
+ * delegated to processMenuRequest in lib/menu-client.
+ */
 export default function HomePage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [processedMenu, setProcessedMenu] = useState<ProcessedMenu | null>(null)
@@ -13,27 +21,9 @@ export default function HomePage() {
   const handleImagesSelected = async (files: File[]) => {
     setIsProcessing(true)
     setError(null)
-    
+
     try {
-      const formData = new FormData()
-      files.forEach(file => {
-        formData.append('images', file)
-      })
-
-      const response = await fetch('/api/process-menu', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to process menu images')
-      }
-
-      const result = await response.json()
-      if (!result.items || result.items.length === 0) {
-        throw new Error('Could not identify any menu items in this image. Please upload a clear photo of a restaurant menu.')
-      }
-      setProcessedMenu(result)
+      setProcessedMenu(await processMenuRequest(files))
     } catch (err) {
       console.error('Error in handleImagesSelected:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
