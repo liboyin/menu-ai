@@ -114,3 +114,9 @@ Tests use Jest + `jest-environment-jsdom` + `@testing-library/react`. Module-lev
 ## Deployment
 
 The app runs as a Next.js Node server on any platform that supports the bundled [Dockerfile](Dockerfile). Step-by-step recipes for the two supported targets — Fly.io and self-hosted Docker Compose — live in [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## License
+
+Copyright (C) 2026 Libo Yin. MenuAI is licensed under the [GNU Affero General Public License v3.0 or later](LICENSE) (`AGPL-3.0-or-later`).
+
+You may use, modify, and redistribute the software, but any distributed **or network-accessible** modified version must make its complete corresponding source available to users under the same license. Because MenuAI is intended to be served over a network, anyone hosting a modified copy should expose a link to the corresponding source (AGPLv3 §13); the canonical source lives at <https://github.com/liboyin/menu-ai>.

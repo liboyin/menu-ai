@@ -15,8 +15,8 @@
     "url": "git+https://github.com/liboyin/menu-ai.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Libo Yin",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/liboyin/menu-ai/issues"
   },
